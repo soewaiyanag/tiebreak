@@ -18,7 +18,7 @@ export function RevealBackerRow({
   const voters = results.attribution?.find((a) => a.optionId === option.id)?.voters ?? [];
 
   return (
-    <div className="flex items-center justify-between gap-4 border-b-[length:var(--border-divider)] border-dashed border-cream-deep py-4 last:border-b-0">
+    <li className="flex items-center justify-between gap-4 border-b-[length:var(--border-divider)] border-dashed border-cream-deep py-4 last:border-b-0">
       <div>
         <p className="font-body text-md font-extrabold text-cocoa">
           {option.label}
@@ -31,6 +31,6 @@ export function RevealBackerRow({
       <p className="shrink-0 font-display text-sm font-extrabold tabular-nums text-cocoa-soft">
         {tally.votes} vote{tally.votes === 1 ? "" : "s"}
       </p>
-    </div>
+    </li>
   );
 }

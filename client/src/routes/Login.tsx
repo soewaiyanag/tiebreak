@@ -6,8 +6,10 @@ import { Button } from "../components/ui/Button";
 import { FormField } from "../components/ui/FormField";
 import { INPUT_CLASSES } from "../components/ui/input-classes";
 import { authClient } from "../lib/auth-client";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 export function Login() {
+  useDocumentTitle("Log in · Tiebreak");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");

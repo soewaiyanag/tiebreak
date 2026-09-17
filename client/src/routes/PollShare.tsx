@@ -8,6 +8,7 @@ import { buttonClasses } from "../components/ui/button-classes";
 import { Skeleton } from "../components/ui/Skeleton";
 import { usePollsApi } from "../hooks/useSessionContext";
 import { useAnnouncer } from "../hooks/useAnnouncer";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 export function PollShare() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,8 @@ export function PollShare() {
   const { announceStatus } = useAnnouncer();
   const [poll, setPoll] = useState<PollDetail | null>(null);
   const [copied, setCopied] = useState(false);
+
+  useDocumentTitle(poll ? `Share "${poll.title}" · Tiebreak` : "Share your poll · Tiebreak");
 
   useEffect(() => {
     if (!id) return;

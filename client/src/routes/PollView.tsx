@@ -8,6 +8,7 @@ import { SettledPollBody } from "../components/poll/SettledPollBody";
 import { usePollsApi } from "../hooks/useSessionContext";
 import { useAnnouncer } from "../hooks/useAnnouncer";
 import { useToast } from "../hooks/useToast";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { presentTally } from "../lib/tally";
 
 export function PollView() {
@@ -17,6 +18,9 @@ export function PollView() {
   const showToast = useToast();
 
   const [poll, setPoll] = useState<PollDetail | null>(null);
+  useDocumentTitle(
+    poll ? `${poll.title}: ${poll.status === "settled" ? "settled" : "live results"} · Tiebreak` : "Loading poll · Tiebreak",
+  );
   const pollRef = useRef<PollDetail | null>(null);
   const lastAnnouncedTotal = useRef<number | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);

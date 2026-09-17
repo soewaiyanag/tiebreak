@@ -29,7 +29,7 @@ export function PollCard({ poll, featured = false }: { poll: PollSummary; featur
           )}
         </div>
 
-        <h3 className="mt-3 font-display text-md font-extrabold text-cocoa">{poll.title}</h3>
+        <h2 className="mt-3 font-display text-md font-extrabold text-cocoa">{poll.title}</h2>
 
         <p className="mt-1 font-body text-sm text-cocoa-soft">
           {isOpen ? `Closes ${formatClosingTime(poll.closesAt)}` : "Voting has ended"} ·{" "}

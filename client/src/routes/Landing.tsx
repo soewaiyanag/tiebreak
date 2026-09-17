@@ -3,6 +3,7 @@ import { Logo } from "../components/layout/Logo";
 import { SkipLink } from "../components/layout/SkipLink";
 import { buttonClasses } from "../components/ui/button-classes";
 import { Card } from "../components/ui/Card";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const STEPS = [
   { title: "Make the poll", body: "A title, 2–10 options, and a closing time. Under a minute." },
@@ -11,6 +12,8 @@ const STEPS = [
 ];
 
 export function Landing() {
+  useDocumentTitle("Tiebreak — settle it in the group chat");
+
   return (
     <>
       <SkipLink />

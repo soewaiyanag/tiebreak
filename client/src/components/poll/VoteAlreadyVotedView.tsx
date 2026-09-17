@@ -1,5 +1,6 @@
 import type { PollResults, PublicPoll } from "@tiebreak/shared";
 import { Pill } from "../ui/Pill";
+import { linkButtonClasses } from "../ui/link-button-classes";
 import { VoterResults } from "./VoterResults";
 
 interface VoteAlreadyVotedViewProps {
@@ -28,7 +29,7 @@ export function VoteAlreadyVotedView({ poll, results, votedOptionLabels, onSugge
         <button
           type="button"
           onClick={onSuggestClick}
-          className="mt-6 font-body text-sm font-bold text-teal-deep hover:underline"
+          className={linkButtonClasses("mt-6")}
         >
           Suggest something else
         </button>

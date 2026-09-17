@@ -22,9 +22,9 @@ export function LeaderCard({ option, tally, totalVotes, aheadBy, isTie, useSegme
         </span>
       )}
 
-      <h3 className="max-w-[85%] text-balance font-display text-xl font-black leading-[var(--leading-tight)] text-cream-bright">
+      <h2 className="max-w-[85%] text-balance font-display text-xl font-black leading-[var(--leading-tight)] text-cream-bright">
         {option.label}
-      </h3>
+      </h2>
 
       {option.suggestedBy && (
         <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--color-scrim-on-tangerine)] px-3 py-1 font-body text-sm font-bold text-cream-bright">

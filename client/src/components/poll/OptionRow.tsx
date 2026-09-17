@@ -5,7 +5,7 @@ import { PackBar } from "./PackBar";
 
 export function OptionRow({ option, tally }: { option: BallotOption; tally: OptionPresentation }) {
   return (
-    <div className="border-b-[length:var(--border-divider)] border-dashed border-cream-deep py-4 last:border-b-0">
+    <li className="border-b-[length:var(--border-divider)] border-dashed border-cream-deep py-4 last:border-b-0">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="truncate font-body text-md font-extrabold text-cocoa">{option.label}</p>
@@ -26,6 +26,6 @@ export function OptionRow({ option, tally }: { option: BallotOption; tally: Opti
       <div className="mt-2">
         <PackBar widthPercent={tally.packBarWidth} />
       </div>
-    </div>
+    </li>
   );
 }

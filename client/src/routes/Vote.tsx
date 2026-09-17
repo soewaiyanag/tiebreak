@@ -15,6 +15,7 @@ import { useAnnouncer } from "../hooks/useAnnouncer";
 import { randomTint } from "../lib/dicebear";
 import { getOrCreateVoterToken } from "../lib/voter-token";
 import { getVotedRecord, setVotedRecord, type VotedRecord } from "../lib/voted-record";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 interface Errors {
   name?: string;
@@ -27,6 +28,7 @@ export function Vote() {
   const { announceStatus } = useAnnouncer();
 
   const [poll, setPoll] = useState<PublicPoll | null>(null);
+  useDocumentTitle(poll ? `${poll.title} · Tiebreak` : "Vote · Tiebreak");
   const [results, setResults] = useState<PollResults | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [votedRecord, setVotedRecordState] = useState<VotedRecord | null>(() =>
@@ -40,6 +42,7 @@ export function Vote() {
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [suggestSubmitting, setSuggestSubmitting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [voteError, setVoteError] = useState<string>();
   const [errors, setErrors] = useState<Errors>({});
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -80,6 +83,7 @@ export function Vote() {
     setErrors(nextErrors);
     if (nextErrors.name) return nameRef.current?.focus();
     if (nextErrors.selection) return ballotRef.current?.querySelector("input")?.focus();
+    setVoteError(undefined);
     setConfirmOpen(true);
   }
 
@@ -100,9 +104,14 @@ export function Vote() {
       setVotedRecordState(record);
       const labels = selectedIds.map((id) => poll.options.find((o) => o.id === id)?.label).join(" and ");
       announceStatus(`Vote cast for ${labels}`);
+      setConfirmOpen(false);
+    } catch {
+      // Keep the voter's name/avatar/selection intact and let them retry from the same modal
+      // (guidance/brand-kit.md "Errors & destructive actions") — never lose a vote silently.
+      setVoteError("That didn't send. Try again.");
+      announceStatus("That didn't send. Try again.");
     } finally {
       setSubmitting(false);
-      setConfirmOpen(false);
     }
   }
 
@@ -175,15 +184,19 @@ export function Vote() {
 
       <ConfirmVoteModal
         open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
+        onClose={() => {
+          setConfirmOpen(false);
+          setVoteError(undefined);
+        }}
         onConfirm={() => void handleConfirmVote()}
         optionLabels={selectedIds.map((id) => poll.options.find((o) => o.id === id)?.label ?? "")}
         submitting={submitting}
+        error={voteError}
       />
       <SuggestModal
         open={suggestOpen}
         onClose={() => setSuggestOpen(false)}
-        onSubmit={(label) => void handleSuggest(label)}
+        onSubmit={handleSuggest}
         voterName={name}
         submitting={suggestSubmitting}
       />

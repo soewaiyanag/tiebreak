@@ -4,6 +4,7 @@ import { Pill } from "../ui/Pill";
 import { Button } from "../ui/Button";
 import { AvatarPicker } from "./AvatarPicker";
 import { BallotFieldset } from "./BallotFieldset";
+import { linkButtonClasses } from "../ui/link-button-classes";
 import { formatClosingTime } from "../../lib/format";
 
 interface VoteBallotViewProps {
@@ -79,7 +80,7 @@ export function VoteBallotView({
         <button
           type="button"
           onClick={onSuggestClick}
-          className="mt-4 font-body text-sm font-bold text-teal-deep hover:underline"
+          className={linkButtonClasses("mt-4")}
         >
           Suggest something else
         </button>

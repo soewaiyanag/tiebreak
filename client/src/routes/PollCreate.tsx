@@ -5,7 +5,9 @@ import { AppShell } from "../components/layout/AppShell";
 import { Button } from "../components/ui/Button";
 import { FormField } from "../components/ui/FormField";
 import { INPUT_CLASSES } from "../components/ui/input-classes";
+import { linkButtonClasses } from "../components/ui/link-button-classes";
 import { usePollsApi } from "../hooks/useSessionContext";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const MIN_OPTIONS = 2;
 const MAX_OPTIONS = 10;
@@ -17,6 +19,7 @@ interface Errors {
 }
 
 export function PollCreate() {
+  useDocumentTitle("New poll · Tiebreak");
   const api = usePollsApi();
   const navigate = useNavigate();
 
@@ -114,7 +117,7 @@ export function PollCreate() {
                   onClick={() => removeOption(index)}
                   disabled={options.length <= MIN_OPTIONS}
                   aria-label={`Remove option ${index + 1}`}
-                  className="shrink-0 rounded-full p-2 text-cocoa-soft hover:text-cocoa focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal disabled:opacity-30"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-cocoa-soft hover:text-cocoa focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal disabled:opacity-30"
                 >
                   ×
                 </button>
@@ -130,7 +133,7 @@ export function PollCreate() {
             type="button"
             onClick={addOption}
             disabled={options.length >= MAX_OPTIONS}
-            className="mt-2 font-body text-sm font-bold text-teal-deep hover:underline disabled:opacity-40 disabled:no-underline"
+            className={linkButtonClasses("mt-2")}
           >
             + Add an option
           </button>
@@ -140,11 +143,23 @@ export function PollCreate() {
           <legend className="font-body text-sm font-bold text-cocoa">How many can each voter pick?</legend>
           <div className="mt-1.5 flex items-center gap-4">
             <label className="flex items-center gap-2 font-body text-sm text-cocoa">
-              <input type="radio" name="type" checked={type === "single"} onChange={() => setType("single")} />
+              <input
+                type="radio"
+                name="type"
+                checked={type === "single"}
+                onChange={() => setType("single")}
+                className="h-4 w-4 accent-tangerine-deep focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2"
+              />
               Just one
             </label>
             <label className="flex items-center gap-2 font-body text-sm text-cocoa">
-              <input type="radio" name="type" checked={type === "multi"} onChange={() => setType("multi")} />
+              <input
+                type="radio"
+                name="type"
+                checked={type === "multi"}
+                onChange={() => setType("multi")}
+                className="h-4 w-4 accent-tangerine-deep focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2"
+              />
               Pick up to
             </label>
             {type === "multi" && (
@@ -179,6 +194,7 @@ export function PollCreate() {
             type="checkbox"
             checked={suggestionsEnabled}
             onChange={(e) => setSuggestionsEnabled(e.target.checked)}
+            className="h-4 w-4 accent-tangerine-deep focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2"
           />
           Let voters suggest their own options
         </label>

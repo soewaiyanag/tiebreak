@@ -52,7 +52,7 @@ export const AvatarPicker = forwardRef<HTMLInputElement, AvatarPickerProps>(func
                 aria-pressed={tint === t}
                 aria-label={`Tint ${t}`}
                 className={cn(
-                  "h-9 w-9 rounded-full border-[length:var(--border-chip)] border-cocoa focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2",
+                  "h-11 w-11 rounded-full border-[length:var(--border-chip)] border-cocoa focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2",
                   AVATAR_TINT_BG_CLASS[t],
                   tint === t && "ring-[3px] ring-cocoa ring-offset-2",
                 )}

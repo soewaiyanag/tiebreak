@@ -1,8 +1,11 @@
 import { Link } from "react-router";
 import { buttonClasses } from "../components/ui/button-classes";
 import { Logo } from "../components/layout/Logo";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 export function NotFound() {
+  useDocumentTitle("Poll not found · Tiebreak");
+
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-cream px-4 text-center">
       <Logo />

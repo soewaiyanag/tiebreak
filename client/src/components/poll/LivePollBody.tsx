@@ -94,13 +94,15 @@ export function LivePollBody({
 
         {trailingOptions.length > 0 && (
           <Card className="py-2">
-            {trailingOptions.map((option) => (
-              <OptionRow
-                key={option.id}
-                option={option}
-                tally={presentation.options.find((t) => t.optionId === option.id)!}
-              />
-            ))}
+            <ul>
+              {trailingOptions.map((option) => (
+                <OptionRow
+                  key={option.id}
+                  option={option}
+                  tally={presentation.options.find((t) => t.optionId === option.id)!}
+                />
+              ))}
+            </ul>
           </Card>
         )}
       </div>

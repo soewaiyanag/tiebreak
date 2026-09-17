@@ -38,7 +38,7 @@ export function BallotFieldset({ options, type, maxChoices, selectedIds, onToggl
                 checked={selected}
                 disabled={disabled}
                 onChange={() => onToggle(option.id)}
-                className="h-5 w-5 shrink-0 accent-tangerine-deep"
+                className="h-5 w-5 shrink-0 accent-tangerine-deep focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2"
               />
               <span className="min-w-0 flex-1">
                 <span className="block font-body text-md font-extrabold text-cocoa">{option.label}</span>

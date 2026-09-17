@@ -26,12 +26,12 @@ export function RevealTie({ presentation, winners, results, viewerOptionId }: Re
         const voters = results.attribution?.find((a) => a.optionId === option.id)?.voters ?? [];
         return (
           <Card key={option.id} className="border-tangerine-deep">
-            <h3 className="font-display text-md font-extrabold text-cocoa">
+            <h2 className="font-display text-md font-extrabold text-cocoa">
               {option.label}
               {option.id === viewerOptionId && (
                 <span className="ml-2 font-body text-sm font-bold text-teal-deep">You backed this</span>
               )}
-            </h3>
+            </h2>
             <p className="mt-1 flex items-center gap-1.5 font-body text-sm text-cocoa-soft">
               {voters.slice(0, 3).map((v, i) => (
                 <Avatar key={i} avatar={v.avatar} size={20} alt="" />

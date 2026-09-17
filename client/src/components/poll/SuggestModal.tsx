@@ -7,7 +7,8 @@ import { INPUT_CLASSES } from "../ui/input-classes";
 interface SuggestModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (label: string) => void;
+  /** Awaited so a failed send can keep the typed suggestion intact and offer retry, not lose it silently. */
+  onSubmit: (label: string) => Promise<void>;
   voterName: string;
   submitting: boolean;
 }
@@ -17,7 +18,7 @@ export function SuggestModal({ open, onClose, onSubmit, voterName, submitting }:
   const [label, setLabel] = useState("");
   const [error, setError] = useState<string>();
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!voterName.trim()) {
       setError("Add your name above first, so we know who's suggesting this.");
       return;
@@ -26,9 +27,13 @@ export function SuggestModal({ open, onClose, onSubmit, voterName, submitting }:
       setError("What's the idea?");
       return;
     }
-    onSubmit(label.trim());
-    setLabel("");
-    setError(undefined);
+    try {
+      await onSubmit(label.trim());
+      setLabel("");
+      setError(undefined);
+    } catch {
+      setError("That didn't send. Try again.");
+    }
   }
 
   return (
@@ -52,7 +57,7 @@ export function SuggestModal({ open, onClose, onSubmit, voterName, submitting }:
         <Button variant="secondary" onClick={onClose} disabled={submitting}>
           Cancel
         </Button>
-        <Button variant="affirmative" onClick={handleSubmit} disabled={submitting}>
+        <Button variant="affirmative" onClick={() => void handleSubmit()} disabled={submitting}>
           {submitting ? "Sending…" : "Suggest it"}
         </Button>
       </div>

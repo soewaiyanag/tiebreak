@@ -7,10 +7,12 @@ import { Skeleton } from "../components/ui/Skeleton";
 import { Pill } from "../components/ui/Pill";
 import { buttonClasses } from "../components/ui/button-classes";
 import { usePollsApi } from "../hooks/useSessionContext";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 type Tab = "open" | "closed";
 
 export function Dashboard() {
+  useDocumentTitle("Your polls · Tiebreak");
   const api = usePollsApi();
   const [polls, setPolls] = useState<PollSummary[] | null>(null);
   const [tab, setTab] = useState<Tab>("open");
@@ -95,7 +97,7 @@ function FirstRunEmptyState() {
 
         <div className="mt-6 w-full rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-dashed border-cocoa-faint p-6 text-left opacity-80">
           <Pill tone="neutral">Example</Pill>
-          <h3 className="mt-3 font-display text-md font-extrabold text-cocoa">Pizza night: what are we ordering?</h3>
+          <h2 className="mt-3 font-display text-md font-extrabold text-cocoa">Pizza night: what are we ordering?</h2>
           <p className="mt-1 font-body text-sm text-cocoa-soft">Closes today at 7:00 PM · 11 votes</p>
         </div>
       </div>

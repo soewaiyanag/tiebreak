@@ -6,8 +6,10 @@ import { Button } from "../components/ui/Button";
 import { FormField } from "../components/ui/FormField";
 import { INPUT_CLASSES } from "../components/ui/input-classes";
 import { authClient } from "../lib/auth-client";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 export function Signup() {
+  useDocumentTitle("Sign up · Tiebreak");
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

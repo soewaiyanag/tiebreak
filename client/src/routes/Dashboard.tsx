@@ -5,6 +5,7 @@ import { AppShell } from "../components/layout/AppShell";
 import { PollCard } from "../components/poll/PollCard";
 import { Skeleton } from "../components/ui/Skeleton";
 import { Pill } from "../components/ui/Pill";
+import { Button } from "../components/ui/Button";
 import { buttonClasses } from "../components/ui/button-classes";
 import { usePollsApi } from "../hooks/useSessionContext";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -15,17 +16,39 @@ export function Dashboard() {
   useDocumentTitle("Your polls · Tiebreak");
   const api = usePollsApi();
   const [polls, setPolls] = useState<PollSummary[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [tab, setTab] = useState<Tab>("open");
+  const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    void api.listPolls().then((result) => {
-      if (!cancelled) setPolls(result);
-    });
+    api
+      .listPolls()
+      .then((result) => {
+        if (cancelled) return;
+        setPolls(result);
+        setLoadError(false);
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true);
+      });
     return () => {
       cancelled = true;
     };
-  }, [api]);
+  }, [api, retryToken]);
+
+  if (loadError) {
+    return (
+      <AppShell>
+        <div className="rounded-[length:var(--radius-lg)] bg-cream-deep p-6 text-center">
+          <p className="font-body text-sm text-cocoa">That didn't load. Try again.</p>
+          <Button variant="secondary" className="mt-3" onClick={() => setRetryToken((n) => n + 1)}>
+            Retry
+          </Button>
+        </div>
+      </AppShell>
+    );
+  }
 
   if (polls === null) {
     return (

@@ -9,20 +9,24 @@ import { Skeleton } from "../components/ui/Skeleton";
 import { usePollsApi } from "../hooks/useSessionContext";
 import { useAnnouncer } from "../hooks/useAnnouncer";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { NotFound } from "./NotFound";
 
 export function PollShare() {
   const { id } = useParams<{ id: string }>();
   const api = usePollsApi();
   const { announceStatus } = useAnnouncer();
   const [poll, setPoll] = useState<PollDetail | null>(null);
+  const [notFound, setNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useDocumentTitle(poll ? `Share "${poll.title}" · Tiebreak` : "Share your poll · Tiebreak");
 
   useEffect(() => {
     if (!id) return;
-    void api.getPoll(id).then(setPoll);
+    void api.getPoll(id).then(setPoll).catch(() => setNotFound(true));
   }, [api, id]);
+
+  if (notFound) return <NotFound />;
 
   if (!poll) {
     return (

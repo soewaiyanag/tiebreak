@@ -10,6 +10,7 @@ import { useAnnouncer } from "../hooks/useAnnouncer";
 import { useToast } from "../hooks/useToast";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { presentTally } from "../lib/tally";
+import { NotFound } from "./NotFound";
 
 export function PollView() {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +19,7 @@ export function PollView() {
   const showToast = useToast();
 
   const [poll, setPoll] = useState<PollDetail | null>(null);
+  const [notFound, setNotFound] = useState(false);
   useDocumentTitle(
     poll ? `${poll.title}: ${poll.status === "settled" ? "settled" : "live results"} · Tiebreak` : "Loading poll · Tiebreak",
   );
@@ -31,7 +33,7 @@ export function PollView() {
 
   const refetch = useCallback(() => {
     if (!id) return;
-    void api.getPoll(id).then(setPoll);
+    void api.getPoll(id).then(setPoll).catch(() => setNotFound(true));
   }, [api, id]);
 
   useEffect(refetch, [refetch]);
@@ -111,6 +113,8 @@ export function PollView() {
     announceStatus("Voting reopened");
     refetch();
   }
+
+  if (notFound) return <NotFound />;
 
   if (!poll) {
     return (

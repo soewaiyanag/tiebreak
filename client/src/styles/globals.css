@@ -17,6 +17,20 @@
     line-height: var(--leading-body);
     -webkit-font-smoothing: antialiased;
   }
+
+  /* The reveal's one-time entrance (guidance/accessibility.md: renders instantly
+     and completely without motion under prefers-reduced-motion — see the
+     motion-reduce:animate-none pairing wherever this is used). */
+  @keyframes reveal-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 }
 
 /* Expose the token values as Tailwind theme variables so you can use

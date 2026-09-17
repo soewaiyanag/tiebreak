@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { PollsApi } from "./api";
+import type { PollsApi } from "../lib/api";
 
 export type SessionMode = "guest" | "authenticated" | "anonymous";
 

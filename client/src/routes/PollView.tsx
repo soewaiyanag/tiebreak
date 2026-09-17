@@ -5,9 +5,9 @@ import { AppShell } from "../components/layout/AppShell";
 import { Skeleton } from "../components/ui/Skeleton";
 import { LivePollBody } from "../components/poll/LivePollBody";
 import { SettledPollBody } from "../components/poll/SettledPollBody";
-import { usePollsApi } from "../lib/session-context";
-import { useAnnouncer } from "../lib/announcer-context";
-import { useToast } from "../lib/toast-context";
+import { usePollsApi } from "../hooks/useSessionContext";
+import { useAnnouncer } from "../hooks/useAnnouncer";
+import { useToast } from "../hooks/useToast";
 import { presentTally } from "../lib/tally";
 
 export function PollView() {

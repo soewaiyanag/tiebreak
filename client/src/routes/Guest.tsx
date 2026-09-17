@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useSessionContext } from "../lib/session-context";
+import { useSessionContext } from "../hooks/useSessionContext";
 
 /** Entry point for "Try as guest" — seeds the demo data, then hands off to the dashboard. */
 export function Guest() {

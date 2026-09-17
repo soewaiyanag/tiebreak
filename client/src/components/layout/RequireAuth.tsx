@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
-import { useSessionContext } from "../../lib/session-context";
+import { useSessionContext } from "../../hooks/useSessionContext";
 
 /** Guards /app/* — redirects to /login?next= unless the visitor is signed in or in guest mode. */
 export function RequireAuth({ children }: { children: ReactNode }) {

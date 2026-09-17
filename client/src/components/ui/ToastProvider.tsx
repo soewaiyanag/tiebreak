@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState, type ReactNode } from "react";
-import { ToastContext, type ToastOptions } from "../../lib/toast-context";
-import { useAnnouncer } from "../../lib/announcer-context";
+import { ToastContext, type ToastOptions } from "../../hooks/useToast";
+import { useAnnouncer } from "../../hooks/useAnnouncer";
 import { buttonClasses } from "./button-classes";
 
 /** "Not this time" needs an undo (guidance/patterns.md) — a generous timeout, not a snap decision. */

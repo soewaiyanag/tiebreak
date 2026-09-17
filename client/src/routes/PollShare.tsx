@@ -6,8 +6,8 @@ import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { buttonClasses } from "../components/ui/button-classes";
 import { Skeleton } from "../components/ui/Skeleton";
-import { usePollsApi } from "../lib/session-context";
-import { useAnnouncer } from "../lib/announcer-context";
+import { usePollsApi } from "../hooks/useSessionContext";
+import { useAnnouncer } from "../hooks/useAnnouncer";
 
 export function PollShare() {
   const { id } = useParams<{ id: string }>();

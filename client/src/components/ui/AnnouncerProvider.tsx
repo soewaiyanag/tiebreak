@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState, type ReactNode } from "react";
-import { AnnouncerContext } from "../../lib/announcer-context";
+import { AnnouncerContext } from "../../hooks/useAnnouncer";
 
 /**
  * Exactly the two live regions guidance/accessibility.md allows: one polite

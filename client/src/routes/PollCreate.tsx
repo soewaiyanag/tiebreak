@@ -5,7 +5,7 @@ import { AppShell } from "../components/layout/AppShell";
 import { Button } from "../components/ui/Button";
 import { FormField } from "../components/ui/FormField";
 import { INPUT_CLASSES } from "../components/ui/input-classes";
-import { usePollsApi } from "../lib/session-context";
+import { usePollsApi } from "../hooks/useSessionContext";
 
 const MIN_OPTIONS = 2;
 const MAX_OPTIONS = 10;

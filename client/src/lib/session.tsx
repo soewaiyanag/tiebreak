@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { guestApi, remoteApi } from "./api";
 import { useSession } from "./auth-client";
-import { SessionContext, type SessionContextValue, type SessionMode } from "./session-context";
+import { SessionContext, type SessionContextValue, type SessionMode } from "../hooks/useSessionContext";
 
 const GUEST_FLAG_KEY = "tiebreak:guest-mode";
 

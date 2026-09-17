@@ -6,7 +6,7 @@ import { PollCard } from "../components/poll/PollCard";
 import { Skeleton } from "../components/ui/Skeleton";
 import { Pill } from "../components/ui/Pill";
 import { buttonClasses } from "../components/ui/button-classes";
-import { usePollsApi } from "../lib/session-context";
+import { usePollsApi } from "../hooks/useSessionContext";
 
 type Tab = "open" | "closed";
 

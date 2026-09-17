@@ -1,7 +1,7 @@
 import type { Option, PollResults } from "@tiebreak/shared";
 import { Card } from "../ui/Card";
 import { presentTally } from "../../lib/tally";
-import { useShouldPlayReveal } from "../../lib/use-reveal-seen";
+import { useShouldPlayReveal } from "../../hooks/useShouldPlayReveal";
 import { RevealTie } from "./RevealTie";
 import { RevealWinner } from "./RevealWinner";
 

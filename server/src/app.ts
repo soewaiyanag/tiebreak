@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import { pollsRouter } from "./routes/polls.js";
+import { publicRouter } from "./routes/public.js";
+import { requireAuth } from "./middleware/require-auth.js";
 
 /**
  * The Express app: all routing + middleware. `index.ts` is just the listener
@@ -64,5 +67,20 @@ app.use(express.json());
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
+
+// TODO(you) — Phase 2: mount Better Auth's Express handler here, at
+// "/api/auth" — client/src/lib/auth-client.ts already points at this exact
+// path (`baseURL: "/api/auth"`), so once this exists, Login/Signup start
+// working with no frontend changes.
+//   app.all("/api/auth/*", toNodeHandler(auth));
+// (Docs: https://www.better-auth.com/docs/integrations/express)
+
+// Public — no account, reachable by anyone with the link. See
+// routes/public.ts for what each of these does and which frontend page calls it.
+app.use("/api/p", publicRouter);
+
+// Creator-only — every route here runs requireAuth first. See
+// routes/polls.ts for what each of these does and which frontend page calls it.
+app.use("/api/polls", requireAuth, pollsRouter);
 
 export default app;

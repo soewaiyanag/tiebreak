@@ -4,21 +4,17 @@ import type { AvatarTint, PollResults, PublicPoll } from "@tiebreak/shared";
 import { SkipLink } from "../components/layout/SkipLink";
 import { Logo } from "../components/layout/Logo";
 import { Skeleton } from "../components/ui/Skeleton";
-import { Pill } from "../components/ui/Pill";
-import { Button } from "../components/ui/Button";
-import { AvatarPicker } from "../components/poll/AvatarPicker";
-import { BallotFieldset } from "../components/poll/BallotFieldset";
+import { VoteBallotView } from "../components/poll/VoteBallotView";
+import { VoteAlreadyVotedView } from "../components/poll/VoteAlreadyVotedView";
+import { VoteClosedView } from "../components/poll/VoteClosedView";
 import { ConfirmVoteModal } from "../components/poll/ConfirmVoteModal";
 import { SuggestModal } from "../components/poll/SuggestModal";
-import { VoterResults } from "../components/poll/VoterResults";
-import { Reveal } from "../components/poll/Reveal";
 import { NotFound } from "./NotFound";
 import { usePollsApi } from "../hooks/useSessionContext";
 import { useAnnouncer } from "../hooks/useAnnouncer";
 import { randomTint } from "../lib/dicebear";
 import { getOrCreateVoterToken } from "../lib/voter-token";
 import { getVotedRecord, setVotedRecord, type VotedRecord } from "../lib/voted-record";
-import { formatClosingTime } from "../lib/format";
 
 interface Errors {
   name?: string;
@@ -102,7 +98,8 @@ export function Vote() {
       const record: VotedRecord = { optionIds: selectedIds, voterName: name.trim() };
       setVotedRecord(slug, record);
       setVotedRecordState(record);
-      announceStatus(`Vote cast for ${selectedIds.map((id) => poll.options.find((o) => o.id === id)?.label).join(" and ")}`);
+      const labels = selectedIds.map((id) => poll.options.find((o) => o.id === id)?.label).join(" and ");
+      announceStatus(`Vote cast for ${labels}`);
     } finally {
       setSubmitting(false);
       setConfirmOpen(false);
@@ -132,7 +129,6 @@ export function Vote() {
     );
   }
 
-  const effectiveStatus = results.status;
   const votedOptionLabels = votedRecord?.optionIds
     .map((id) => poll.options.find((o) => o.id === id)?.label)
     .filter((label): label is string => Boolean(label));
@@ -144,103 +140,36 @@ export function Vote() {
         <Logo />
       </header>
       <main id="main" className="mx-auto max-w-content px-4 pb-28">
-        {effectiveStatus === "settled" ? (
-          <>
-            <Pill tone="neutral">Settled</Pill>
-            <h1 className="mt-3 text-balance font-display text-2xl font-black text-cocoa">{poll.title}</h1>
-            {votedOptionLabels && votedOptionLabels.length > 0 && (
-              <p className="mt-2 font-body text-sm font-bold text-teal-deep">
-                You backed {votedOptionLabels.join(" and ")}
-              </p>
-            )}
-            <div className="mt-6">
-              <Reveal pollId={poll.id} options={poll.options} results={results} viewerOptionId={votedRecord?.optionIds[0] ?? null} />
-            </div>
-          </>
+        {results.status === "settled" ? (
+          <VoteClosedView
+            poll={poll}
+            results={results}
+            votedOptionLabels={votedOptionLabels}
+            viewerOptionId={votedRecord?.optionIds[0] ?? null}
+          />
         ) : votedRecord ? (
-          <>
-            <Pill tone="teal">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-deep" aria-hidden="true" />
-              Voting open
-            </Pill>
-            <h1 className="mt-3 text-balance font-display text-2xl font-black text-cocoa">{poll.title}</h1>
-            <p className="mt-2 font-body text-sm font-bold text-teal-deep">
-              You backed {votedOptionLabels?.join(" and ")} — thanks for voting, no takebacks
-            </p>
-            <div className="mt-6">
-              <VoterResults options={poll.options} results={results} />
-            </div>
-            {poll.suggestionsEnabled && (
-              <button
-                type="button"
-                onClick={() => setSuggestOpen(true)}
-                className="mt-6 font-body text-sm font-bold text-teal-deep hover:underline"
-              >
-                Suggest something else
-              </button>
-            )}
-          </>
+          <VoteAlreadyVotedView
+            poll={poll}
+            results={results}
+            votedOptionLabels={votedOptionLabels ?? []}
+            onSuggestClick={() => setSuggestOpen(true)}
+          />
         ) : (
-          <>
-            <Pill tone="teal">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-deep" aria-hidden="true" />
-              Closes {formatClosingTime(poll.closesAt)}
-            </Pill>
-            <h1 className="mt-3 text-balance font-display text-2xl font-black text-cocoa">{poll.title}</h1>
-
-            <div className="mt-6">
-              <AvatarPicker
-                ref={nameRef}
-                name={name}
-                onNameChange={setName}
-                tint={tint}
-                onTintChange={setTint}
-                nameError={errors.name}
-              />
-            </div>
-
-            <div ref={ballotRef} className="mt-6">
-              <BallotFieldset
-                options={poll.options}
-                type={poll.type}
-                maxChoices={poll.maxChoices}
-                selectedIds={selectedIds}
-                onToggle={toggleOption}
-              />
-              {errors.selection && (
-                <p className="mt-2 font-body text-sm text-cocoa" role="alert">
-                  {errors.selection}
-                </p>
-              )}
-            </div>
-
-            {poll.suggestionsEnabled && (
-              <button
-                type="button"
-                onClick={() => setSuggestOpen(true)}
-                className="mt-4 font-body text-sm font-bold text-teal-deep hover:underline"
-              >
-                Suggest something else
-              </button>
-            )}
-
-            <div className="fixed inset-x-0 bottom-0 border-t-[length:var(--border-divider)] border-dashed border-cream-deep bg-cream-deep/95 p-4 backdrop-blur">
-              <div className="mx-auto max-w-content">
-                <Button
-                  variant="primary"
-                  className="w-full"
-                  onClick={handleCastClick}
-                  disabled={selectedIds.length === 0 || !name.trim()}
-                >
-                  {selectedIds.length === 0 || !name.trim()
-                    ? "Cast my vote"
-                    : `Cast my vote for ${selectedIds
-                        .map((id) => poll.options.find((o) => o.id === id)?.label)
-                        .join(" and ")}`}
-                </Button>
-              </div>
-            </div>
-          </>
+          <VoteBallotView
+            poll={poll}
+            name={name}
+            onNameChange={setName}
+            nameError={errors.name}
+            nameRef={nameRef}
+            tint={tint}
+            onTintChange={setTint}
+            selectedIds={selectedIds}
+            onToggleOption={toggleOption}
+            selectionError={errors.selection}
+            ballotRef={ballotRef}
+            onSuggestClick={() => setSuggestOpen(true)}
+            onCastClick={handleCastClick}
+          />
         )}
       </main>
 

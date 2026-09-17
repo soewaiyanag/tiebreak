@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Avatar as AvatarType } from "@tiebreak/shared";
-import { avatarUrl } from "../../lib/dicebear";
+import { AVATAR_TINT_BG_CLASS, avatarUrl } from "../../lib/dicebear";
 import { cn } from "../../lib/cn";
 
 interface AvatarProps {
@@ -10,13 +10,6 @@ interface AvatarProps {
   alt: string;
   className?: string;
 }
-
-const TINT_BG: Record<AvatarType["tint"], string> = {
-  f8c9b9: "bg-tint-peach",
-  cbe2d8: "bg-tint-teal-soft",
-  f6e0a4: "bg-tint-butter-soft",
-  e3d2f2: "bg-tint-lilac",
-};
 
 /** DiceBear avatar with a tinted-circle fallback on load failure — never a silent gap. */
 export function Avatar({ avatar, size, alt, className }: AvatarProps) {
@@ -33,7 +26,7 @@ export function Avatar({ avatar, size, alt, className }: AvatarProps) {
         role={alt ? "img" : undefined}
         aria-label={alt || undefined}
         aria-hidden={alt ? undefined : true}
-        className={cn(shared, TINT_BG[avatar.tint])}
+        className={cn(shared, AVATAR_TINT_BG_CLASS[avatar.tint])}
         style={{ width: size, height: size }}
       />
     );

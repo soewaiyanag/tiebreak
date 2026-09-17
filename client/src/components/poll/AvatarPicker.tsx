@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import type { AvatarTint } from "@tiebreak/shared";
 import { Avatar } from "../ui/Avatar";
-import { AVATAR_TINTS } from "../../lib/dicebear";
+import { AVATAR_TINT_BG_CLASS, AVATAR_TINTS } from "../../lib/dicebear";
 import { INPUT_CLASSES } from "../ui/input-classes";
 import { FormField } from "../ui/FormField";
 import { cn } from "../../lib/cn";
@@ -13,13 +13,6 @@ interface AvatarPickerProps {
   onTintChange: (tint: AvatarTint) => void;
   nameError?: string;
 }
-
-const TINT_SWATCH: Record<AvatarTint, string> = {
-  f8c9b9: "bg-tint-peach",
-  cbe2d8: "bg-tint-teal-soft",
-  f6e0a4: "bg-tint-butter-soft",
-  e3d2f2: "bg-tint-lilac",
-};
 
 /**
  * Identity before ballot, and make it fun (guidance/patterns.md): the avatar
@@ -60,7 +53,7 @@ export const AvatarPicker = forwardRef<HTMLInputElement, AvatarPickerProps>(func
                 aria-label={`Tint ${t}`}
                 className={cn(
                   "h-9 w-9 rounded-full border-[length:var(--border-chip)] border-cocoa focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2",
-                  TINT_SWATCH[t],
+                  AVATAR_TINT_BG_CLASS[t],
                   tint === t && "ring-[3px] ring-cocoa ring-offset-2",
                 )}
               />

@@ -1,4 +1,5 @@
-import type { Option, PollResults } from "@tiebreak/shared";
+import type { PollResults } from "@tiebreak/shared";
+import type { BallotOption } from "../../lib/poll-options";
 import type { OptionPresentation } from "../../lib/tally";
 import { backersLine } from "../../lib/reveal-text";
 
@@ -9,7 +10,7 @@ export function RevealBackerRow({
   results,
   viewerOptionId,
 }: {
-  option: Option;
+  option: BallotOption;
   tally: OptionPresentation;
   results: PollResults;
   viewerOptionId?: string | null;

@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import type { AvatarTint } from "@tiebreak/shared";
 import { Avatar } from "../ui/Avatar";
 import { AVATAR_TINTS } from "../../lib/dicebear";
@@ -25,7 +26,10 @@ const TINT_SWATCH: Record<AvatarTint, string> = {
  * is seeded from the typed name, so the preview is always truthful to what
  * gets submitted — one avatar mechanism, not two competing ones.
  */
-export function AvatarPicker({ name, onNameChange, tint, onTintChange, nameError }: AvatarPickerProps) {
+export const AvatarPicker = forwardRef<HTMLInputElement, AvatarPickerProps>(function AvatarPicker(
+  { name, onNameChange, tint, onTintChange, nameError },
+  nameRef,
+) {
   return (
     <div className="flex items-start gap-4">
       <Avatar avatar={{ seed: name || "you", tint }} size={50} alt="" />
@@ -34,6 +38,7 @@ export function AvatarPicker({ name, onNameChange, tint, onTintChange, nameError
           {(props) => (
             <input
               {...props}
+              ref={nameRef}
               type="text"
               value={name}
               onChange={(e) => onNameChange(e.target.value)}
@@ -65,4 +70,4 @@ export function AvatarPicker({ name, onNameChange, tint, onTintChange, nameError
       </div>
     </div>
   );
-}
+});

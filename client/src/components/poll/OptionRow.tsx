@@ -1,9 +1,9 @@
-import type { Option } from "@tiebreak/shared";
 import type { OptionPresentation } from "../../lib/tally";
+import type { BallotOption } from "../../lib/poll-options";
 import { Avatar } from "../ui/Avatar";
 import { PackBar } from "./PackBar";
 
-export function OptionRow({ option, tally }: { option: Option; tally: OptionPresentation }) {
+export function OptionRow({ option, tally }: { option: BallotOption; tally: OptionPresentation }) {
   return (
     <div className="border-b-[length:var(--border-divider)] border-dashed border-cream-deep py-4 last:border-b-0">
       <div className="flex items-center justify-between gap-4">

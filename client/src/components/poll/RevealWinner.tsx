@@ -1,4 +1,5 @@
-import type { Option, PollResults } from "@tiebreak/shared";
+import type { PollResults } from "@tiebreak/shared";
+import type { BallotOption } from "../../lib/poll-options";
 import type { TallyPresentation } from "../../lib/tally";
 import { Card } from "../ui/Card";
 import { Avatar } from "../ui/Avatar";
@@ -7,8 +8,8 @@ import { RevealBackerRow } from "./RevealBackerRow";
 
 interface RevealWinnerProps {
   presentation: TallyPresentation;
-  options: Option[];
-  winner: Option;
+  options: BallotOption[];
+  winner: BallotOption;
   results: PollResults;
   viewerOptionId?: string | null;
 }

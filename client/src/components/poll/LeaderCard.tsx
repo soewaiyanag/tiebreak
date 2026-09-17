@@ -1,10 +1,10 @@
-import type { Option } from "@tiebreak/shared";
 import type { OptionPresentation } from "../../lib/tally";
+import type { BallotOption } from "../../lib/poll-options";
 import { Avatar } from "../ui/Avatar";
 import { SegmentedTally } from "./SegmentedTally";
 
 interface LeaderCardProps {
-  option: Option;
+  option: BallotOption;
   tally: OptionPresentation;
   totalVotes: number;
   aheadBy: number;

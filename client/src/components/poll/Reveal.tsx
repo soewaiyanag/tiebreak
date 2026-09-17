@@ -1,4 +1,5 @@
-import type { Option, PollResults } from "@tiebreak/shared";
+import type { PollResults } from "@tiebreak/shared";
+import type { BallotOption } from "../../lib/poll-options";
 import { Card } from "../ui/Card";
 import { presentTally } from "../../lib/tally";
 import { useShouldPlayReveal } from "../../hooks/useShouldPlayReveal";
@@ -7,7 +8,7 @@ import { RevealWinner } from "./RevealWinner";
 
 interface RevealProps {
   pollId: string;
-  options: Option[];
+  options: BallotOption[];
   results: PollResults;
   /** The option this viewer backed, if any — "You backed Veggie supreme" stays visible in every state. */
   viewerOptionId?: string | null;

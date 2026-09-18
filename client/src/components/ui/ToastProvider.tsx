@@ -31,7 +31,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={showToast}>
       {children}
       {toast && (
-        <div className="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-center justify-between gap-4 rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-cocoa px-5 py-4 text-cream-bright shadow-lg">
+        <div className="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-center justify-between gap-4 rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-cocoa px-5 py-4 text-cream-bright animate-[toast-in_0.2s_ease-out] motion-reduce:animate-none">
           <p className="font-body text-sm">{toast.message}</p>
           <div className="flex shrink-0 items-center gap-3">
             {toast.actionLabel && toast.onAction && (
@@ -50,7 +50,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               type="button"
               onClick={dismiss}
               aria-label="Dismiss"
-              className="rounded-full p-1 text-cream-bright/80 hover:text-cream-bright focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal"
+              className="rounded-full p-1 text-cream-bright/80 transition-transform duration-150 hover:scale-110 hover:text-cream-bright active:scale-90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal motion-reduce:transition-none motion-reduce:hover:scale-100"
             >
               ×
             </button>

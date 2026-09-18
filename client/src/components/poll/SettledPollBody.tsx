@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { PollDetail } from "@tiebreak/shared";
 import { Pill } from "../ui/Pill";
 import { Button } from "../ui/Button";
+import { CopyButton } from "../ui/CopyButton";
 import { Reveal } from "./Reveal";
 import { ReopenModal } from "./ReopenModal";
 import { ballotOf } from "../../lib/poll-options";
@@ -45,9 +46,7 @@ export function SettledPollBody({ poll, onCopyResult, onReopen }: SettledPollBod
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Button variant="primary" onClick={handleCopyResult}>
-          Copy result
-        </Button>
+        <CopyButton onCopy={handleCopyResult} label="Copy result" />
         <Button variant="secondary" onClick={() => setReopenOpen(true)}>
           Reopen voting
         </Button>

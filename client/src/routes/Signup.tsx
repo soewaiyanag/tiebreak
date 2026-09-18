@@ -39,7 +39,7 @@ export function Signup() {
     <>
       <SkipLink />
       <header className="px-4 py-6">
-        <Link to="/">
+        <Link to="/" className="inline-block transition-transform duration-150 hover:scale-105 active:scale-95 motion-reduce:transition-none motion-reduce:hover:scale-100">
           <Logo />
         </Link>
       </header>

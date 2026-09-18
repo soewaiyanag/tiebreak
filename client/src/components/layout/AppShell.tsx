@@ -10,7 +10,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <SkipLink />
       <header className="border-b-[length:var(--border-divider)] border-dashed border-cream-deep">
         <div className="mx-auto flex h-[var(--nav-height)] max-w-page items-center justify-between px-4">
-          <Link to="/app" className="flex items-center gap-2">
+          <Link to="/app" className="flex items-center gap-2 transition-transform duration-150 hover:scale-105 active:scale-95 motion-reduce:transition-none motion-reduce:hover:scale-100">
             <Logo />
           </Link>
           <Link to="/app/new" className={buttonClasses("secondary")}>

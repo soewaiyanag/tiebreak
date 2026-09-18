@@ -2,6 +2,7 @@ import type { Option, PollDetail } from "@tiebreak/shared";
 import { Card } from "../ui/Card";
 import { Pill } from "../ui/Pill";
 import { Button } from "../ui/Button";
+import { CopyButton } from "../ui/CopyButton";
 import { LeaderCard } from "./LeaderCard";
 import { OptionRow } from "./OptionRow";
 import { VoterCrewStack } from "./VoterCrewStack";
@@ -129,9 +130,7 @@ export function LivePollBody({
           <Button variant="secondary" onClick={onEndVoting}>
             End voting
           </Button>
-          <Button variant="primary" onClick={onCopyLink}>
-            Copy link
-          </Button>
+          <CopyButton onCopy={onCopyLink} label="Copy link" />
         </div>
       </Card>
       <p className="mt-3 font-body text-sm text-cocoa-soft">

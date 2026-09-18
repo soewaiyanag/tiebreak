@@ -50,7 +50,10 @@ export function Landing() {
 
         <section className="mx-auto grid max-w-page gap-4 px-4 pb-20 sm:grid-cols-3">
           {STEPS.map((step, i) => (
-            <Card key={step.title}>
+            <Card
+              key={step.title}
+              className="transition-transform duration-200 ease-out hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
               <span className="font-display text-lg font-black text-tangerine-deep">{i + 1}</span>
               <h2 className="mt-2 font-display text-md font-extrabold text-cocoa">{step.title}</h2>
               <p className="mt-1 font-body text-sm text-cocoa-soft">{step.body}</p>

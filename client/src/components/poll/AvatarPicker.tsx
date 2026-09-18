@@ -52,9 +52,9 @@ export const AvatarPicker = forwardRef<HTMLInputElement, AvatarPickerProps>(func
                 aria-pressed={tint === t}
                 aria-label={`Tint ${t}`}
                 className={cn(
-                  "h-11 w-11 rounded-full border-[length:var(--border-chip)] border-cocoa focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2",
+                  "h-11 w-11 rounded-full border-[length:var(--border-chip)] border-cocoa transition-transform duration-150 ease-out hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:scale-100",
                   AVATAR_TINT_BG_CLASS[t],
-                  tint === t && "ring-[3px] ring-cocoa ring-offset-2",
+                  tint === t && "scale-110 ring-[3px] ring-cocoa ring-offset-2",
                 )}
               />
             ))}

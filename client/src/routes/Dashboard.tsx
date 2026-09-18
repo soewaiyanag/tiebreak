@@ -80,8 +80,8 @@ export function Dashboard() {
             type="button"
             onClick={() => setTab(t)}
             aria-pressed={tab === t}
-            className={`rounded-full px-4 py-1.5 font-body text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal ${
-              tab === t ? "bg-cream-deep text-cocoa" : "text-cocoa-soft"
+            className={`rounded-full px-4 py-1.5 font-body text-sm font-bold transition-[background-color,color,transform] duration-150 ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal motion-reduce:transition-none motion-reduce:active:scale-100 ${
+              tab === t ? "bg-cream-deep text-cocoa" : "text-cocoa-soft hover:text-cocoa"
             }`}
           >
             {t === "open" ? "My polls" : "Closed"}

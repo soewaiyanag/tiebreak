@@ -15,7 +15,7 @@ export function PendingSuggestionCard({ suggestion, onApprove, onDecline, disabl
     <Card
       id={`pending-suggestion-${suggestion.id}`}
       tabIndex={-1}
-      className="flex flex-col gap-4 border-dashed sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-4 border-dashed animate-[reveal-in_0.25s_ease-out] motion-reduce:animate-none sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="flex items-start gap-3">
         <Avatar avatar={suggestion.suggestedBy!.avatar} size={50} alt={suggestion.suggestedBy!.name} />

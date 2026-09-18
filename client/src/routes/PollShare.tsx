@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router";
 import type { PollDetail } from "@tiebreak/shared";
 import { AppShell } from "../components/layout/AppShell";
 import { Card } from "../components/ui/Card";
-import { Button } from "../components/ui/Button";
+import { CopyButton } from "../components/ui/CopyButton";
 import { buttonClasses } from "../components/ui/button-classes";
 import { Skeleton } from "../components/ui/Skeleton";
 import { usePollsApi } from "../hooks/useSessionContext";
@@ -17,7 +17,6 @@ export function PollShare() {
   const { announceStatus } = useAnnouncer();
   const [poll, setPoll] = useState<PollDetail | null>(null);
   const [notFound, setNotFound] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   useDocumentTitle(poll ? `Share "${poll.title}" · Tiebreak` : "Share your poll · Tiebreak");
 
@@ -40,9 +39,7 @@ export function PollShare() {
 
   async function copyLink() {
     await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
     announceStatus("Link copied");
-    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -55,9 +52,7 @@ export function PollShare() {
 
         <Card className="mt-6 flex items-center justify-between gap-3 bg-cream-deep">
           <span className="truncate font-body text-sm font-bold text-cocoa">{shareUrl}</span>
-          <Button variant="primary" onClick={copyLink} className="shrink-0">
-            {copied ? "Copied!" : "Copy link"}
-          </Button>
+          <CopyButton onCopy={copyLink} label="Copy link" className="shrink-0" />
         </Card>
 
         <Link to={`/app/polls/${poll.id}`} className={buttonClasses("secondary", "mt-6")}>

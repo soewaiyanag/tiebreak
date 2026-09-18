@@ -117,7 +117,7 @@ export function PollCreate() {
                   onClick={() => removeOption(index)}
                   disabled={options.length <= MIN_OPTIONS}
                   aria-label={`Remove option ${index + 1}`}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-cocoa-soft hover:text-cocoa focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal disabled:opacity-30"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-cocoa-soft transition-[color,background-color,transform] duration-150 hover:scale-110 hover:bg-cream-deep hover:text-cocoa active:scale-90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal disabled:opacity-30 disabled:hover:scale-100 motion-reduce:transition-none motion-reduce:hover:scale-100"
                 >
                   ×
                 </button>

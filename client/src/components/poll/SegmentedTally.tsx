@@ -10,7 +10,7 @@ export function SegmentedTally({ totalVotes, filledCount }: { totalVotes: number
       {Array.from({ length: totalVotes }, (_, i) => (
         <span
           key={i}
-          className={`h-4 w-2 rounded-[length:var(--radius-sm)] ${i < filledCount ? "bg-butter" : "bg-tangerine-deep"}`}
+          className={`h-4 w-2 rounded-[length:var(--radius-sm)] transition-colors duration-300 ${i < filledCount ? "bg-butter" : "bg-tangerine-deep"}`}
         />
       ))}
     </div>

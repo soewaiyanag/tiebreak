@@ -10,7 +10,12 @@ export function PollCard({ poll, featured = false }: { poll: PollSummary; featur
 
   return (
     <Link to={`/app/polls/${poll.id}`} className="block focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2 rounded-[length:var(--radius-lg)]">
-      <Card className={cn("transition-colors hover:bg-cream-deep/40", featured && "border-tangerine-deep")}>
+      <Card
+        className={cn(
+          "transition-[transform,background-color] duration-200 ease-out hover:-translate-y-1 hover:bg-cream-deep/40 active:translate-y-0 active:scale-[0.99] motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+          featured && "border-tangerine-deep",
+        )}
+      >
         <div className="flex items-start justify-between gap-3">
           <Pill tone={isOpen ? "teal" : "neutral"}>
             {isOpen ? (

@@ -62,7 +62,10 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-cocoa/40 p-4 sm:items-center" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-cocoa/40 p-4 sm:items-center animate-[backdrop-in_0.15s_ease-out] motion-reduce:animate-none"
+      onClick={onClose}
+    >
       <div
         ref={dialogRef}
         role="dialog"
@@ -70,7 +73,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "w-full max-w-md rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-card p-6",
+          "w-full max-w-md rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-card p-6 animate-[dialog-in_0.2s_ease-out] motion-reduce:animate-none",
           className,
         )}
       >

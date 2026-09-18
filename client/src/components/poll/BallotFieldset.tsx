@@ -27,9 +27,10 @@ export function BallotFieldset({ options, type, maxChoices, selectedIds, onToggl
             <label
               key={option.id}
               className={cn(
-                "flex cursor-pointer items-center gap-3 rounded-[length:var(--radius-md)] border-[length:var(--border-chip)] border-cocoa bg-card px-4 py-3.5 transition-colors",
+                "flex cursor-pointer items-center gap-3 rounded-[length:var(--radius-md)] border-[length:var(--border-chip)] border-cocoa bg-card px-4 py-3.5 transition-[border-color,background-color,transform] duration-150 ease-out active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100",
+                !selected && !disabled && "hover:border-cocoa/70 hover:bg-cream-deep/40",
                 selected && "border-[length:var(--border-card)] border-tangerine-deep bg-cream-deep",
-                disabled && "cursor-not-allowed opacity-50",
+                disabled && "cursor-not-allowed opacity-50 active:scale-100",
               )}
             >
               <input
@@ -50,7 +51,13 @@ export function BallotFieldset({ options, type, maxChoices, selectedIds, onToggl
                 )}
               </span>
               {selected && (
-                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" className="shrink-0 text-tangerine-deep">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                  className="shrink-0 animate-[check-in_0.2s_ease-out] text-tangerine-deep motion-reduce:animate-none"
+                >
                   <path
                     d="M4 10.5l4 4 8-9"
                     fill="none"

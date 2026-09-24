@@ -2,7 +2,7 @@
 
 A group polling app — create a poll, share a link, the group votes, ties get settled honestly instead of picked by a coin flip.
 
-**Live:** https://tiebreak-two.vercel.app
+**Live:** https://tiebreak-soewaiyanag.vercel.app
 
 ## Status
 

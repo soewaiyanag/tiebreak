@@ -12,17 +12,24 @@ import type {
   SuggestOptionInput,
 } from "@tiebreak/shared";
 import type { PollsApi } from "./types";
+import { getBearerToken } from "../auth-client";
 
 /**
- * The real implementation, calling the Express API the backend build order
- * describes (see TODO.md). Routes 404 until each one is built — that's
- * expected; `guestApi` is what makes the app demoable in the meantime.
+ * The real implementation, calling the Express API server/src/routes/
+ * implements. Creator-only routes (/polls/*) are guarded server-side by
+ * auth.middleware.ts, which expects the bearer token attached below;
+ * public routes (/p/*) ignore it, so attaching it unconditionally (when
+ * signed in) is simpler than branching per path.
  */
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = await getBearerToken();
   const res = await fetch(`/api${path}`, {
     credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     ...init,
   });
   if (!res.ok) {

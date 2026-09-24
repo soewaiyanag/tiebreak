@@ -5,7 +5,8 @@
       "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
     },
     "backend": {
-      "root": "server"
+      "root": "server",
+      "entrypoint": "dist/index.js"
     }
   },
   "rewrites": [

@@ -1,17 +1,31 @@
 # Tiebreak
 
-A group polling app — create a poll, share a link, the group votes, ties get settled. Work in progress, built openly as a learning project rather than presented as finished.
+A group polling app — create a poll, share a link, the group votes, ties get settled honestly instead of picked by a coin flip.
+
+**Live:** https://tiebreak-two.vercel.app
 
 ## Status
 
-- **Frontend** (`client/`) — built: poll creation, a share flow, a guest ballot, live results, and a creator dashboard behind a login (`better-auth`). Built with AI assistance; right now it runs against a local, in-browser simulation of the real API so the UI is fully demoable before the backend catches up.
-- **Backend** (`server/`) — in progress, and this part I'm building myself, route by route, specifically to learn Express + Drizzle + Postgres properly rather than have it generated. Most routes are still stubs (`TODO.md` tracks exactly which).
-- **Deploy** — not live yet. Planned: client → Vercel, server → Railway (Postgres via Neon).
+- **Frontend** (`client/`) — built: poll creation, a share flow, live results, a creator dashboard behind login, and a guest mode that runs the whole product against a local in-browser simulation so it's demoable with zero setup.
+- **Backend** (`server/`) — built: layered Express + Drizzle + PostgreSQL API (routes → controllers → services, Nest-flavored but framework-free), real Neon Auth integration, the settle-at-read-time poll state machine, and derived (never stored) vote tallies.
+- **Deploy** — live. Client and server ship as two Vercel Services in one project (`vercel.json`), same origin, no CORS hop. Database on Neon.
+
+Try it at `/guest` for the no-setup simulation, or sign up for the real thing.
 
 ## Stack
 
-React 19 · TypeScript · React Router · better-auth · Tailwind CSS — Express · Drizzle ORM · PostgreSQL (Neon) — Yarn workspaces monorepo (`client/` / `server/` / `shared/`).
+React 19 · TypeScript · React Router · Tailwind CSS — Express 5 · Drizzle ORM · PostgreSQL (Neon) · Neon Auth — Yarn workspaces monorepo (`client/` / `server/` / `shared/`) — deployed on Vercel.
 
 ## Why it's split this way
 
-The frontend came together fast with AI help. The backend is deliberately where I slowed down: the poll state machine and the "honest results" logic (never leaking pending suggestions to voters, deriving vote counts instead of storing them) are the parts worth actually understanding, so `LEARNING.md` in this repo is the protocol I set for myself to make sure I'm reasoning through those before any code gets written for them, not just approving a diff.
+The frontend came together fast with AI help. The backend is where the actual product logic lives: the poll state machine and the "honest results" rule (never leaking pending suggestions to voters, deriving vote counts from votes instead of storing a running tally) are enforced server-side, not just in the UI — a creator dashboard can't fake a result the database doesn't back.
+
+## Running locally
+
+```bash
+yarn install
+cp .env.example .env.local   # fill in DATABASE_URL, NEON_AUTH_BASE_URL, NEON_AUTH_JWKS_URL
+yarn dev
+```
+
+`yarn dev` runs the client (Vite) and server (Express, via `tsx watch`) together.

@@ -41,3 +41,5 @@ server/.env*
 *.sln
 *.sw?
 .neon
+.vercel
+.env*

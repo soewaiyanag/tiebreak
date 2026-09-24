@@ -13,7 +13,8 @@
     "dev:client": "yarn workspace @tiebreak/client dev",
     "dev:server": "yarn workspace @tiebreak/server dev",
     "build": "yarn workspace @tiebreak/client build && yarn workspace @tiebreak/server build",
-    "lint": "yarn workspace @tiebreak/client lint && yarn workspace @tiebreak/server lint"
+    "lint": "yarn workspace @tiebreak/client lint && yarn workspace @tiebreak/server lint",
+    "test:smoke": "yarn workspace @tiebreak/server test:smoke"
   },
   "devDependencies": {
     "@neon/config": "^1.3.2",

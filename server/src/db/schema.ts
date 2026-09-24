@@ -74,7 +74,12 @@ export const votes = pgTable(
     castAt: timestamp("cast_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    // One vote per (poll, browser) — enforced by Postgres, not just app code.
-    unique("votes_poll_voter_unique").on(table.pollId, table.voterToken),
+    // One vote per (poll, browser, option) — enforced by Postgres, not just
+    // app code. Includes optionId (not just pollId+voterToken) so a `multi`
+    // (pick-up-to-N) ballot can insert one row per selected option for the
+    // same voter without violating uniqueness; a `single` ballot only ever
+    // inserts one row per voter anyway, so this is a strict superset of the
+    // original one-vote-per-browser rule, not a loosening of it.
+    unique("votes_poll_voter_option_unique").on(table.pollId, table.voterToken, table.optionId),
   ],
 );

@@ -1,37 +1,56 @@
 import type { NextFunction, Request, Response } from "express";
+import { createRemoteJWKSet, jwtVerify } from "jose";
+import { HttpError } from "../common/errors.js";
+
+// Express's own Request type doesn't know about `user` — PollsController
+// reads req.user.id as the creator id, attached below once the token verifies.
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { id: string };
+    }
+  }
+}
+
+const jwksUrl = process.env.NEON_AUTH_JWKS_URL;
+if (!jwksUrl) throw new Error("NEON_AUTH_JWKS_URL is not set");
+
+// Fetched once and cached/refreshed internally by jose — not re-fetched per request.
+const JWKS = createRemoteJWKSet(new URL(jwksUrl));
 
 /**
- * Guards every route in routes/polls.ts — mount it in app.ts:
- *   app.use("/api/polls", requireAuth, pollsRouter);
+ * Guards every route in routes/polls.routes.ts:
+ *   router.use(AuthMiddleware.verify);
  *
- * Frontend: nothing calls this directly, but it's what makes
- * client/src/components/layout/RequireAuth.tsx's redirect-to-login
- * meaningful — right now that component just checks whether the Better Auth
- * client has a session; this middleware is the server actually enforcing it.
- * routes/public.ts's routes (the vote page, results, casting a vote) must
- * stay reachable with **no** auth — never add this middleware there
+ * Neon Auth is a *hosted* service (client/src/lib/auth-client.ts talks to it
+ * directly, not through this server), so this server never issues sessions
+ * itself — its only auth job is verifying the JWT a signed-in creator sends,
+ * against Neon Auth's public JWKS endpoint. `payload.sub` is the stable
+ * user id (see https://neon.com/guides/react-neon-auth-hono, the reference
+ * pattern this follows).
+ *
+ * routes/public.routes.ts's routes (the vote page, results, casting a vote)
+ * must stay reachable with **no** auth — never add this middleware there
  * (spec/technical-requirements.md: "vote and results pages are public by
  * link").
- *
- * Concept: JWKS verification. Better Auth issues a session; this middleware
- * verifies it against `NEON_AUTH_JWKS_URL` on every request (don't just trust
- * a client-sent user id) and attaches the verified user to `req.user`, so
- * every handler downstream can use `req.user.id` as the creator id without
- * re-checking auth itself.
  */
-export async function requireAuth(_req: Request, res: Response, _next: NextFunction) {
-  // TODO(you): verify the session/JWT (Better Auth's Express helper, or a
-  // manual JWKS check against NEON_AUTH_JWKS_URL), attach the user to
-  // req.user, call next(). On failure: res.status(401).json({ message: ... })
-  //
-  // Gotcha: `req.user` isn't a property Express's own Request type knows
-  // about — you'll need a module augmentation somewhere (this file is a
-  // reasonable place) along the lines of:
-  //   declare global {
-  //     namespace Express {
-  //       interface Request { user?: { id: string; name: string; email: string } }
-  //     }
-  //   }
-  // before `req.user = ...` (here) or `req.user.id` (in routes/polls.ts) will typecheck.
-  res.status(501).json({ message: "not implemented" });
+export class AuthMiddleware {
+  static async verify(req: Request, _res: Response, next: NextFunction) {
+    const authHeader = req.header("authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      throw HttpError.unauthorized("Sign in to do that.");
+    }
+
+    try {
+      const { payload } = await jwtVerify(authHeader.slice("Bearer ".length), JWKS, {
+        issuer: new URL(jwksUrl!).origin,
+      });
+      if (!payload.sub) throw HttpError.unauthorized("Invalid session. Sign in again.");
+      req.user = { id: payload.sub };
+      next();
+    } catch (err) {
+      if (err instanceof HttpError) throw err;
+      throw HttpError.unauthorized("Invalid session. Sign in again.");
+    }
+  }
 }

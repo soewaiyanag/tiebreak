@@ -1,9 +1,9 @@
-import express from "express";
+import express, { type ErrorRequestHandler } from "express";
 import cors from "cors";
 import morgan from "morgan";
-import { pollsRouter } from "./routes/polls.js";
-import { publicRouter } from "./routes/public.js";
-import { requireAuth } from "./middleware/require-auth.js";
+import { pollsRouter } from "./routes/polls.routes.js";
+import { publicRouter } from "./routes/public.routes.js";
+import { HttpError } from "./common/errors.js";
 
 /**
  * The Express app: all routing + middleware. `index.ts` is just the listener
@@ -68,19 +68,40 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// TODO(you) — Phase 2: mount Better Auth's Express handler here, at
-// "/api/auth" — client/src/lib/auth-client.ts already points at this exact
-// path (`baseURL: "/api/auth"`), so once this exists, Login/Signup start
-// working with no frontend changes.
-//   app.all("/api/auth/*", toNodeHandler(auth));
-// (Docs: https://www.better-auth.com/docs/integrations/express)
+// Neon Auth is a hosted service — the client talks to it directly
+// (client/src/lib/auth-client.ts), never through this server. Nothing to
+// mount here; auth.middleware.ts only verifies the JWT it issues.
 
 // Public — no account, reachable by anyone with the link. See
-// routes/public.ts for what each of these does and which frontend page calls it.
+// routes/public.routes.ts -> controllers/public.controller.ts ->
+// services/public.service.ts for what each route does and which frontend
+// page calls it.
 app.use("/api/p", publicRouter);
 
-// Creator-only — every route here runs requireAuth first. See
-// routes/polls.ts for what each of these does and which frontend page calls it.
-app.use("/api/polls", requireAuth, pollsRouter);
+// Creator-only — every route runs auth.middleware.ts's AuthMiddleware.verify
+// first (mounted inside polls.routes.ts itself). See
+// routes/polls.routes.ts -> controllers/polls.controller.ts ->
+// services/polls.service.ts.
+app.use("/api/polls", pollsRouter);
+
+/**
+ * Every service throws HttpError for an expected failure (not found, poll
+ * closed, wrong owner, ...); Express 5 forwards a rejected promise from any
+ * async handler or middleware straight here automatically — no per-route
+ * try/catch needed. This is the same job a Nest exception filter does.
+ */
+const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+  if (err instanceof HttpError) {
+    res.status(err.status).json({ message: err.message });
+    return;
+  }
+  if (err instanceof SyntaxError && "body" in err) {
+    res.status(400).json({ message: "That request body isn't valid JSON." });
+    return;
+  }
+  console.error(err);
+  res.status(500).json({ message: "Something went wrong." });
+};
+app.use(errorHandler);
 
 export default app;

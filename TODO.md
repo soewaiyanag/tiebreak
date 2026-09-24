@@ -1,46 +1,107 @@
 # Tiebreak — Build Plan
 
-Step-by-step implementation guide for the full-stack path. Work top to bottom.
-Claude keeps this file current: ticking boxes as we finish, and reading it at the
-start of each session to know where we are.
+## Status (2026-09-24): both `client/` and `server/` are fully built
 
-## Division of labor (changed 2026-09-17)
+Frontend and backend are both done and verified end to end against the real
+Neon database — see "Division of labor" below for how that happened in two
+stages. What's left is genuinely optional: the two differentiators not yet
+built (Sudden Death, Share Card), a couple of stretch features, and deploying
+it live. Everything in Phases 0–5 below is implemented; kept as a record of
+what was built and why, and as the map for the optional work that remains.
 
-**The entire frontend (`client/`) is built** — Claude owns it fully now, no
-teaching zone there. **The backend (`server/`) is still yours to learn**, under
-`LEARNING.md`'s usual protocol. Phases 2–6 below are rewritten as a **backend
-build order**: every frontend page already calls the real API it needs via
-`client/src/lib/api/remote.ts` — those calls 404 until you build the matching
-route. `shared/src/types.ts` is the contract: request/response shapes for every
-endpoint, importable from both workspaces. `guestApi`
-(`client/src/lib/api/guest.ts`) is a full client-side simulation of the same
-rules, which is how the frontend got built and verified before any backend
-route existed — it's demo-only, never the contract itself.
+## Division of labor
 
-Not built in this pass, deliberately: **Sudden Death** and **Share Card**
-differentiator UI, and stretch #11/#12/#14 (saved identity, 30-day retention,
-dark mode). Sudden Death's differentiator section below is unchanged — do it as
-a follow-up once the core loop works end to end.
+**2026-09-17 — the frontend became fully Claude-owned.** Every page was
+built against `shared/src/types.ts`'s contract, calling real API routes via
+`client/src/lib/api/remote.ts`. `guestApi` (`client/src/lib/api/guest.ts`) is
+a full client-side simulation of the same rules — demo-only, never the
+contract itself — which is how the frontend got built and verified before
+any backend route existed.
 
-## How to read this
+**2026-09-24 — the backend became Claude-owned too.** The original plan (see
+history below) had the user learning the backend hands-on, teaching-zone
+style. That changed: "I would like to learn with another project but for
+this project I would like to learn by reading what you implemented and how
+you implemented so also build the backend completely until the project is
+functional." So `server/` is now fully built — see "What got built" below.
+Their hands-on backend learning continues on a separate project instead.
+
+## What got built (server/)
+
+Structured as a plain-Express, NestJS-*flavored* layered architecture — no
+decorators or DI container (that's a real framework's job, and would've been
+complexity for its own sake here), just the same separation of concerns:
+class-based, static methods throughout.
+
+```
+server/src/
+  db/            schema.ts, client.ts — Drizzle models + the pooled connection
+  common/        errors.ts (HttpError), poll-state.ts (PollState), mappers.ts
+                 (Mappers), queries.ts (PollQueries), slug.ts (Slug), sse.ts (SseHub)
+  middleware/    auth.middleware.ts (AuthMiddleware) — JWKS verification
+  services/      polls.service.ts, public.service.ts, results.service.ts —
+                 business logic + DB access, no req/res
+  controllers/   polls.controller.ts, public.controller.ts — req/res glue only
+  routes/        polls.routes.ts, public.routes.ts — Router wiring only
+```
+
+Errors: every service throws `HttpError` (`.notFound()`, `.conflict()`, etc.)
+for an expected failure; Express 5 forwards a rejected promise from any async
+handler straight to `app.ts`'s error-handling middleware automatically — no
+per-route try/catch, the same job a Nest exception filter does without
+needing the framework.
+
+**Auth — corrected from the original plan.** Neon Auth is a *hosted* service:
+the browser talks to it directly (`client/src/lib/auth-client.ts`, via
+`@neondatabase/neon-js/auth`, pointed at `NEON_AUTH_BASE_URL` — **not** a
+same-origin `/api/auth` path proxied through this server, which was the
+original assumption below and was wrong). This server never issues sessions;
+`auth.middleware.ts` only verifies the JWT the client sends
+(`Authorization: Bearer <token>`, minted via `authClient.token()`) against
+`NEON_AUTH_JWKS_URL` using `jose`. Verified against
+https://neon.com/guides/react-neon-auth-hono.
+
+**Schema fix:** `votes` had `UNIQUE(pollId, voterToken)`, flagged below as
+only allowing one row per voter per poll — doesn't fit `multi` (pick-up-to-N)
+polls needing multiple option rows per voter. Fixed to
+`UNIQUE(pollId, voterToken, optionId)`; idempotency ("already voted") is
+checked at the application level in `PublicService.castVote` instead
+(a `SELECT` for any existing row before insert), since the constraint alone
+can no longer distinguish "this voter's ballot is already in" from "this
+exact row exists." Migrated and verified against the real `production` branch.
+
+**Not seeded:** `data/sample-polls.json` was never loaded into the real
+database. Its creator ("Morgan") isn't a real Neon Auth user, and seeding it
+under a fake `creatorId` would create data no real account owns for no
+functional benefit — `guestApi` already covers the demo experience entirely
+client-side. If real sample data is wanted later, seed it under an actual
+signed-up account's id.
+
+**Verified live**, via a real signed-up test account and `curl` (no browser
+available this session) — created cleaned up afterward: sign-up → JWT →
+create a poll → creator detail → public ballot → cast a vote → idempotent
+re-vote → suggest → approve (+ reject-if-already-ruled-on) → decline → undo
+(restore) → settle → results swap `voterCrew` for `attribution` exactly at
+settle → vote-after-close correctly rejected → reopen requires a future date
+→ SSE push confirmed live on a vote → multi-choice vote (2 rows, same voter)
+confirms the schema fix.
+
+## How to read the rest of this file
 
 - `[ ]` not started · `[~]` in progress · `[x]` done
-- 🎓 **teaching zone** — Claude explains the concept first, hands you a skeleton
-  with `// TODO` on the lines that carry the idea, you attempt, one retry, then
-  the fix. (See `LEARNING.md`.)
-- 🔧 **autopilot** — Claude just builds it; flags any new library in one line.
 - **Ref:** points at the mockup spec sheet / brand kit / spec file to build from.
 - **Unblocks:** the frontend page(s) that start working once this route exists.
 
 ## Stack (decided)
 
 - Monorepo (yarn workspaces): `client/` Vite + React SPA · `server/` Express API ·
-  `shared/` types (added when first needed)
-- DB: **Neon Lakebase Postgres** · Auth: **Neon Auth** (managed Better Auth) ·
-  ORM: **Drizzle**
-- Live results: **SSE** from the Express server (differentiator #1)
-- Deploy: client → Vercel · server → Railway
-- Differentiators: **Truly Live Results** (SSE), **Sudden Death** (linked tiebreak poll)
+  `shared/` types
+- DB: **Neon Lakebase Postgres** · Auth: **Neon Auth** (managed Better Auth,
+  hosted — see above) · ORM: **Drizzle**
+- Live results: **SSE** from the Express server (differentiator #1) — built
+- Deploy: client → Vercel · server → Railway (not yet done)
+- Differentiators: **Truly Live Results** (SSE, built) · **Sudden Death**
+  (linked tiebreak poll, not yet built)
 
 ## References
 
@@ -53,277 +114,129 @@ a follow-up once the core loop works end to end.
 
 ---
 
-## Product rules to decide (fill these in as we hit them)
+## Product rules decided
 
-These have no single right answer; the README's "Product Rules I Decided" section
-wants them. Decided during the frontend build — the backend should match these,
-since the UI already assumes them:
+These have no single right answer; the README's "Product Rules I Decided"
+section wants them — all implemented as described:
 
-- [x] **Reopening a poll** → the creator must set a **new closing time**; the old
-      deadline has already passed by definition, so reopening without one would
-      leave the poll open forever with no honest countdown. `ReopenModal` requires
-      it and won't submit without a future date. `POST /api/polls/:id/reopen`
-      takes `{ closesAt }` (see `ReopenPollInput` in `shared/src/types.ts`) —
-      **reject the request server-side if `closesAt` is missing or in the past**,
-      the same way `castVote` must reject a vote after close.
-- [x] **One-vote line** for account-less voters → a random token in `localStorage`
-      (`client/src/lib/voter-token.ts`), sent with every vote. The server enforces
-      it via `UNIQUE(poll_id, voter_token)` (already in `schema.ts`). Two browsers
-      = two votes, accepted by design — this is pizza night, not an election.
+- [x] **Reopening a poll** → the creator must set a **new closing time**;
+      enforced server-side in `PollsService.reopen` (400 if missing or not
+      in the future), matching `ReopenModal`'s client-side requirement.
+- [x] **One-vote line** for account-less voters → a random token in
+      `localStorage` (`client/src/lib/voter-token.ts`), checked at the
+      application level in `PublicService.castVote` before insert. Two
+      browsers = two votes, accepted by design.
 - [x] **Results past ~20 voters** → the segmented per-voter tally switches to
       counts + relative bars only at **N = 20** total votes
-      (`SEGMENTED_TALLY_THRESHOLD` in `client/src/lib/tally.ts`). The server
-      doesn't need to know this — it's a pure presentation decision made from the
-      vote counts the results endpoint already returns.
-- [x] **Declined suggestions** → the option row stays (`suggestionStatus:
-      "declined"`), never hard-deleted, so the undo toast can restore it. Backend
-      needs a `POST /api/polls/:id/suggestions/:sid/restore` route (sets the
-      status back to `"pending"`) — see Phase 5 below; `guestApi` already
-      implements this exact behavior as the reference.
-- [x] **Post-vote** → yes, a voter sees live standings immediately after casting,
-      with their own pick flagged ("You backed Veggie supreme"). Chosen on
-      purpose: seeing the race is part of the fun. Same view on a return visit
-      while the poll's still open — read-only, no takebacks. See design
-      challenge 1's write-up below.
+      (`SEGMENTED_TALLY_THRESHOLD` in `client/src/lib/tally.ts`) — a pure
+      frontend presentation decision; the results endpoint just returns counts.
+- [x] **Declined suggestions** → the option row stays
+      (`suggestionStatus: "declined"`), restorable via
+      `POST /api/polls/:id/suggestions/:optionId/restore`
+      (`PollsService.restoreSuggestion`, only from `"declined"`).
+- [x] **Post-vote** → a voter sees live standings immediately after casting,
+      own pick flagged. Read-only on a return visit while still open.
 - [ ] **Sudden death ties again** → another round, or a coin-flip moment —
-      undecided, out of scope for this pass (see the differentiator section).
+      undecided, out of scope until Sudden Death itself is built.
 
 ---
 
 ## Phase 0 — Foundations
 
-- [x] Monorepo restructure: `client/` + `server/` workspaces, `.nvmrc`, yarn install
-- [x] Client: Tailwind v4 (PostCSS) + `tokens.css` wired, bare shell renders, build green
-- [x] ~~Server: Hono skeleton~~ — **switched to Express** (2026-09-14): the goal is
-      re-learning React + Express, not learning a new framework on top of relearning.
-      CORS + health logic ported 1:1 and re-verified (same 5 scenarios: dev
-      matching/attacker origin, prod unset/set/matching/attacker — all pass, no
-      crash). Note for later: the earlier Hono attempt had a real gotcha worth
-      remembering even though it's gone now — Hono's `cors()` spreads an explicit
-      `origin: undefined` over its own `"*"` default and then calls `.includes()`
-      on it, crashing with a 500. Express's `cors` package takes a callback
-      (`(origin, cb) => cb(err, allow)`) instead, so `allow: false` just denies
-      cleanly — no equivalent trap.
-- [x] 🎓 Fill the two `// TODO`s in `server/src/app.ts` (CORS origin, `/api/health` body) —
-      verified: health returns `{status, timestamp}`; CORS allows only the configured
-      origin, denies everyone else, no crash when `CLIENT_ORIGIN` is unset
-- [x] 🔧 `NODE_ENV` set explicitly in `server/package.json` (`development` for `dev`,
-      `production` for `start`) — needed so the CORS ternary's prod branch is
-      actually reachable at deploy time, not just an accident of an unset var
-- [x] 🔧 Confirm the dev loop: `yarn dev` runs both; `curl localhost:5173/api/health`
-      reaches the server through the Vite proxy — verified, matches the direct
-      port-3000 response
-- [x] 🔧 Drizzle wiring started: `drizzle-orm` + `pg` + `drizzle-kit` installed,
-      `server/drizzle.config.ts` (migrations over `DATABASE_URL_UNPOOLED`),
-      `server/src/db/client.ts` (pooled connection), `db:generate`/`db:migrate`/
-      `db:studio`/`db:seed` scripts added — `schema.ts` is a placeholder until Phase 1
-- [x] 🔧 `shared/` workspace with `src/types.ts` — `Poll`/`Option`/`Vote`/
-      `PollResults` and every request/response DTO the frontend calls against
-      (`CreatePollInput`, `CastVoteInput`, `CastVoteResult`, etc.). This is the
-      API contract — build routes to match these shapes exactly.
-- [ ] 🔧 `.env.example` at root documenting every var (`DATABASE_URL`,
-      `DATABASE_URL_UNPOOLED`, `NEON_AUTH_*`, `CLIENT_ORIGIN`, `PORT`)
+- [x] Monorepo restructure: `client/` + `server/` + `shared/` workspaces,
+      `.nvmrc`, yarn install
+- [x] Client: Tailwind v4 (PostCSS) + `tokens.css` wired
+- [x] Server: Express, CORS, `/api/health`
+- [x] `shared/` workspace — `Poll`/`Option`/`Vote`/`PollResults` and every
+      request/response DTO both workspaces build against
+- [x] `.env.example` at root documenting every var
 
-**Phase 0 core loop is done** — monorepo, client shell, and server are all
-wired and verified end to end.
+## Phase 1 — Schema & data layer · hard problem #1
 
-## Phase 1 — Schema & data layer  ·  hard problem #1
-
-**Ref:** spec sheet "API" table, `spec/technical-requirements.md` → Database.
-
-- [x] 🔧 Add `drizzle-orm` + `pg` + `drizzle-kit` to `server/`; `drizzle.config.ts`
-      (migrations over `DATABASE_URL_UNPOOLED`, the direct connection)
-- [x] 🔧 `server/src/db/client.ts` — a `pg` Pool on `DATABASE_URL` (pooled), one
-      instance reused
-- [x] 🎓 `server/src/db/schema.ts` — you write the concept-bearing parts:
-  - [x] `polls` — `status` enum (`open` | `settled`), `type` enum (`single` |
-        `multi`), `maxChoices`, `closesAt` (timestamptz, UTC), `settledAt`,
-        `suggestionsEnabled`, `parentPollId` (nullable self-FK, for sudden death)
-  - [x] `options` — `source` enum (`creator` | `suggestion`), `suggestionStatus`
-        enum (`null` | `pending` | `approved` | `declined`), `suggestedByName` /
-        `suggestedBySeed` / `suggestedByTint`, `displayOrder`
-  - [x] `votes` — `optionId`, `voterName`, `voterSeed`, `voterTint`, `voterToken`,
-        `castAt`; **`UNIQUE(pollId, voterToken)`** (the casual one-vote rule)
-  - [x] `ON DELETE CASCADE` from poll → options → votes
-- [ ] 🎓 Derived-state helpers (pure functions, unit-testable):
-  - [ ] `effectiveStatus(poll, now)` → `settled` if `status = 'settled'` OR
-        `now >= closesAt` (settle-at-read-time; no cron)
-  - [ ] `tallyFromVotes(votes, options)` → counts, leader, `aheadBy`, tie detection
-- [ ] 🔧 `drizzle-kit generate` + `migrate`; verify tables on a Neon **branch**
-      first, then the `production` branch
-- [ ] 🔧 Seed script from `data/sample-polls.json` — shift every timestamp
-      relative to `now()` (keep the offsets), so open polls are genuinely open
-- [ ] ✅ Checkpoint: recap the state machine + what "enforced server-side" means here
+- [x] `server/src/db/schema.ts` — `polls`/`options`/`votes`, all four enums,
+      cascading deletes, `UNIQUE(pollId, voterToken, optionId)` (fixed from
+      the original `UNIQUE(pollId, voterToken)` — see "Schema fix" above)
+- [x] `common/poll-state.ts`'s `PollState` — `effectiveStatus` (settle-at-
+      read-time) and `tallyFromVotes` (counts, leaders, `aheadBy`)
+- [x] Migrated to the real Neon `production` branch (`yarn db:generate` +
+      `yarn db:migrate`) — verified via `neon psql`
+- [x] Sample-data seeding — deliberately skipped; see "Not seeded" above
 
 ## Phase 2 — Auth + poll CRUD
 
-**Unblocks:** Login, Signup, Dashboard, New poll, Share step (all already built,
-all calling `remoteApi` and currently 404ing).
-
-- [ ] 🎓 Neon Auth wiring: mount Better Auth's Express handler at `/api/auth/*`
-      (the client already points here — `client/src/lib/auth-client.ts`,
-      `baseURL: "/api/auth"`) and a middleware that verifies the session/JWT
-      against `NEON_AUTH_JWKS_URL`, attaching the user to `req` (e.g.
-      `req.user`). Concept: JWKS verification. Once this lands, `Login`/`Signup`
-      (`authClient.signIn.email` / `signUp.email`) start working as-is — no
-      frontend changes needed.
-- [ ] 🔧 `POST /api/polls` — body is `CreatePollInput`, response is `Poll`
-      (both in `shared/src/types.ts`). Attach `req.user` as creator.
-- [ ] 🔧 `GET /api/polls` — creator's list, response `PollSummary[]`
-      (`id, slug, title, status, closesAt, settledAt, totalVotes,
-      pendingSuggestionCount` — derive the last two from `votes`/`options`,
-      never store them)
-- [ ] 🔧 `GET /api/polls/:id` — creator's full poll, response `PollDetail`
-      (`Poll & { options, results }`) — includes pending suggestions; `results`
-      uses the same shape Phase 4 defines below
-- [ ] ✅ Checkpoint: Dashboard, poll creation, and the share step all work
-      end to end against real data
+- [x] Neon Auth wiring — `auth.middleware.ts`'s `AuthMiddleware.verify`
+      (JWKS verification via `jose`); client via `@neondatabase/neon-js/auth`
+      (see "Auth — corrected" above for why this differs from the original plan)
+- [x] `POST /api/polls`, `GET /api/polls`, `GET /api/polls/:id` —
+      `PollsService.create` / `.list` / `.getById`
 
 ## Phase 3 — The vote page's write path
 
-**Unblocks:** the ballot state of `/p/:slug` (built, currently 404ing on submit).
-Design challenge 1 (the voter's three states) is already designed and built on
-the frontend — see the "Post-vote" decision above; nothing left to design here,
-just make the reads/writes real.
+- [x] `GET /api/p/:slug` — `PublicService.getPublicPoll`, pending
+      suggestions correctly excluded
+- [x] `POST /api/p/:slug/votes` — `PublicService.castVote`: rejects a closed
+      poll, idempotent per `voterToken`, enforces `maxChoices`
 
-- [ ] 🔧 `GET /api/p/:slug` — public poll, response `PublicPoll`. **Never**
-      include pending suggestions (`ballotOf` in `client/src/lib/poll-options.ts`
-      shows exactly which options belong: `source === "creator"` or
-      `suggestionStatus === "approved"`)
-- [ ] 🎓 `POST /api/p/:slug/votes` — body `CastVoteInput`, response
-      `CastVoteResult` (`{ alreadyVoted, results }`). The guarded transition:
-  - [ ] reject if `effectiveStatus(poll) !== 'open'` (server-side, ignore
-        whatever the client thinks the status is)
-  - [ ] idempotent per `voterToken` — if a vote already exists for
-        `(pollId, voterToken)`, return `{ alreadyVoted: true, results }`
-        instead of erroring or double-inserting
-  - [ ] ⚠️ **known schema gap:** `votes` currently has
-        `UNIQUE(pollId, voterToken)`, which only allows **one row per voter per
-        poll** — fine for `single`, but a `multi` (pick-up-to-N) vote needs one
-        row per selected option, same voter. You'll likely need
-        `UNIQUE(pollId, voterToken, optionId)` instead, or a different shape for
-        multi-choice ballots. Worth deciding before writing this route.
-- [ ] ✅ Checkpoint: cast a vote against the real backend, refresh, confirm the
-      already-voted state holds
+## Phase 4 — Results & live updates · hard problem #2 + differentiator #1
 
-## Phase 4 — Results & live updates  ·  hard problem #2 + differentiator #1
+- [x] `GET /api/p/:slug/results` and `GET /api/polls/:id`'s `results` field —
+      both call `ResultsService.build`, one implementation
+- [x] `GET /api/p/:slug/stream` — SSE via `common/sse.ts`'s `SseHub`,
+      confirmed live push on vote
 
-**Unblocks:** live tallies on both the creator's poll view and the voter's
-post-vote view — both already render `PollResults` via `presentTally()`
-(`client/src/lib/tally.ts`), which computes leader/aheadBy/tie/pack-widths from
-raw counts. That presentation logic is done; this phase is purely about
-producing the counts.
+## Phase 5 — Suggestions, moderation, closing & the reveal · design challenge 2
 
-- [ ] 🔧 `GET /api/p/:slug/results` — response `PollResults`. **Counts only
-      while open** (`tallies`, `voterCrew` — identity without their choice —
-      `lastVoteAt`); **add `attribution`** (who backed each option) only once
-      `effectiveStatus === 'settled'`. This open/closed split is what makes
-      "who voted for what is revealed at close" actually true server-side, not
-      just a UI convention.
-- [ ] 🔧 Same endpoint powers the creator's `GET /api/polls/:id` `results`
-      field — reuse the same query/computation, don't duplicate it
-- [ ] 🎓 `GET /api/p/:slug/stream` (differentiator #1, optional but the client
-      is already built for it) — SSE endpoint (`text/event-stream`), a
-      per-poll subscriber set, emit on vote + moderation. The client
-      (`client/src/lib/api/remote.ts` → `subscribeToResults`) already tries
-      `EventSource` first and **silently falls back to polling every 4s** if
-      the stream 404s or errors — so shipping this is a pure upgrade, no
-      frontend changes needed either way. Concepts: SSE framing, keep-alive,
-      reconnect/catch-up without double-sending.
-- [ ] ✅ Checkpoint: watch two browser tabs — one voting, one on the creator's
-      poll view — and confirm the tally updates without a manual refresh
+- [x] `POST /api/p/:slug/suggestions` — `PublicService.suggestOption`
+- [x] Approve / decline / restore — `PollsService.approveSuggestion` /
+      `.declineSuggestion` / `.restoreSuggestion`, each rejecting an
+      already-ruled-on suggestion
+- [x] `POST /api/polls/:id/settle`, `POST /api/polls/:id/reopen` —
+      `PollsService.settle` / `.reopen`
 
-## Phase 5 — Suggestions, moderation, closing & the reveal  ·  design challenge 2
+## Phase 6 — Deploy (not started)
 
-**Unblocks:** the "Suggest something else" modal, the pending-suggestion cards
-and Add it/Not this time buttons, End voting, Reopen voting, and the settled
-reveal — all built (`client/src/components/poll/{SuggestModal,
-PendingSuggestionCard, Reveal, ReopenModal}.tsx`). Design challenge 2 (the
-reveal, the tie panel, the Copy result payload) is already designed and built —
-see `client/src/lib/reveal-text.ts` for the exact Copy result wording and
-`RevealTie.tsx`/`RevealWinner.tsx` for the tie vs. winner layouts.
-
-- [ ] 🔧 `POST /api/p/:slug/suggestions` (public) — body `SuggestOptionInput`,
-      response `Option` with `suggestionStatus: "pending"`. Reject if
-      `!poll.suggestionsEnabled` or the poll isn't open.
-- [ ] 🎓 `POST /api/polls/:id/suggestions/:optionId/approve` — flips
-      `suggestionStatus` to `"approved"` (option is now live, 0 votes since no
-      `votes` rows reference it yet). Reject if not currently `"pending"`.
-- [ ] 🎓 `POST /api/polls/:id/suggestions/:optionId/decline` — flips to
-      `"declined"`. **Do not delete the row** — the frontend's undo toast calls
-      `restoreSuggestion` right after, which needs it to still exist (see the
-      "Declined suggestions" decision above).
-- [ ] 🔧 `POST /api/polls/:id/suggestions/:optionId/restore` — flips back to
-      `"pending"`. This is what backs the undo toast's "Undo" button
-      (`client/src/routes/PollView.tsx` → `resolveSuggestion`, 8-second window
-      via `ToastProvider`).
-- [ ] 🎓 `POST /api/polls/:id/settle` — sets `status: "settled"`,
-      `settledAt: now()`. Also implement settle-**at-read-time**: any route
-      that reads a poll should compute `effectiveStatus` from `closesAt`
-      even if this route was never called (mirrors
-      `server/src/db/poll-state.ts`'s `effectiveStatus`, which you already
-      wrote — reuse it here).
-- [ ] 🎓 `POST /api/polls/:id/reopen` — body `ReopenPollInput` (`{ closesAt }`,
-      **required**, must be in the future — see the "Reopening a poll"
-      decision above). Sets `status: "open"`, `settledAt: null`,
-      `closesAt: input.closesAt`.
-- [ ] ✅ Checkpoint: approve a suggestion, decline one and undo it, end voting
-      early, reopen with a new time — confirm each against the real backend
-
-## Phase 6 — Deploy
-
-Guest mode, the landing page, first-run empty state, responsive layout, and the
-full accessibility pass (headings, focus rings, contrast, live regions, page
-titles, touch targets) are **already built and audited** on the frontend —
-nothing left to do there. This phase is deployment only.
+Everything else is built and verified locally against the real database.
+This phase is the only thing actually left to do for a live submission.
 
 - [ ] 🔧 Deploy — client → Vercel (root `client/`), server → Railway (root
       `server/`), env vars set, CORS locked to the client origin, register the
-      deploy domain with Neon Auth trusted domains
-- [ ] 🔧 Seed the deployed database from `data/sample-polls.json` (shift
-      timestamps relative to `now()`, keep the offsets) — this is a separate
-      concern from `guestApi`'s client-side seeding, which only ever touches
-      `localStorage` and never the real database
+      deploy domain with Neon Auth trusted domains (`neon neon-auth domain add`)
 - [ ] 🔧 Perf — vote page interactive <3s mobile, Lighthouse ≥85 perf / ≥90 a11y
-      on the **vote page** (not just landing); code-split routes if needed
+      on the **vote page** (not just landing); the client bundle is currently
+      ~920KB (up from ~380KB before `@neondatabase/neon-js`) — worth
+      code-splitting the auth-only pages (Login/Signup) via `React.lazy` if
+      this misses the perf target
 - [ ] 🔧 Test the shared-link flow from a real phone: create a poll, text
       yourself the link, vote from the sofa
 - [ ] ✅ Final checkpoint
 
-## Differentiator — Sudden Death
+## Differentiator — Sudden Death (not built, optional)
 
 **Ref:** PollResult tie frame, `spec/differentiators.md` #3.
 
-- [ ] 🎓 `POST /api/polls/:id/tiebreak` — detect the tie, create a linked child
+- [ ] `POST /api/polls/:id/tiebreak` — detect the tie, create a linked child
       poll (tied options only, short window, `parentPollId` set), same share link
-- [ ] 🔧 Tie reveal → "Break the tie" / "Leave it tied"; child poll runs the normal
+- [ ] Tie reveal → "Break the tie" / "Leave it tied"; child poll runs the normal
       lifecycle; reveal acknowledges the two-round story
-- [ ] 🔧 Decide + handle "ties again" (decision above)
-- [ ] ✅ README write-up (state-machine stretch: a poll that spawns a poll)
+- [ ] Decide + handle "ties again" (decision above)
+- [ ] README write-up (state-machine stretch: a poll that spawns a poll)
 
 ## Cross-cutting (check continuously, not once)
 
 - [x] WCAG 2.2 AA — audited across the built frontend: heading hierarchy,
       semantic lists, focus-visible rings, the tangerine-scrim contrast rule,
-      44px touch targets, unique page titles, failed-action retry states.
-      Re-check anything new you add on the backend side that changes response
-      shapes (e.g. don't let an API error message leak a stack trace to a guest).
-- [x] One tangerine moment per screen — held: `LeaderCard`/`RevealWinner` (the
-      leader/winner), `VoteBallotView`'s Cast my vote button, `Dashboard`'s
-      empty-state Create button. Nowhere else uses `bg-tangerine`.
-- [x] Every % has its count; every tie is words; no full-width leader bar —
-      `presentTally()` and `SegmentedTally`/`PackBar` enforce this structurally
-- [x] `prefers-reduced-motion` honoured on the reveal's entrance animation
-      (`motion-reduce:animate-none` in `Reveal.tsx`)
-- [ ] README "Development Journey" + "AI Collaboration" notes — still to write;
-      the design decisions above (reopening, one-vote line, the >20-voter
-      threshold, declined-suggestion recovery, post-vote standings) are ready
-      to drop straight into "Product Rules I Decided"
+      44px touch targets, unique page titles, failed-action retry states
+- [x] One tangerine moment per screen — held throughout
+- [x] Every % has its count; every tie is words; no full-width leader bar
+- [x] `prefers-reduced-motion` honoured (reveal entrance, hover/press
+      micro-interactions added 2026-09-18)
+- [ ] README "Development Journey" + "AI Collaboration" notes — still to
+      write; the "Product rules decided" section above is ready to drop in
 
 ## Deploy readiness checklist
 
-- [ ] `yarn build` green for both workspaces — `client/` is green now;
-      `server/` still has the open `tallyFromVotes` TODO blocking it
-- [ ] No secrets in the client bundle (client never sees `DATABASE_URL`)
+- [x] `yarn build` green for both workspaces
+- [x] No secrets in the client bundle — `NEON_AUTH_BASE_URL`/`NEON_AUTH_JWKS_URL`
+      are public URLs by design; `DATABASE_URL` never reaches Vite
 - [ ] Incognito test: guest experience + vote page from a phone
 - [ ] Submit the **guest URL** (`/guest`), not the landing page

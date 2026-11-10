@@ -114,18 +114,18 @@ describe("POST /api/p/:slug/votes", () => {
 });
 
 /**
- * Known bugs in today's castVote, pinned as `it.fails` so the suite stays
- * green while still proving they exist. Step 3 (race-safe voting) flips each
- * of these to a plain `it`.
+ * Vote integrity. Each of these was first committed as an `it.fails` against
+ * the old castVote (check-then-insert, no lock, no ballot check) to prove the
+ * bug existed, then flipped to `it` alongside the fix.
  */
-describe("castVote known bugs (fixed in step 3)", () => {
-  it.fails("a double-tap (parallel requests, same browser) records exactly one ballot", async () => {
+describe("castVote integrity", () => {
+  it("a double-tap (parallel requests, same browser) records exactly one ballot", async () => {
     const { poll, margherita, pepperoni } = await seedPoll();
     // Warm the pool first: opening cold connections staggers the requests by a few ms, enough to hide the race.
     await Promise.all(Array.from({ length: 10 }, () => request(app).get(`/api/p/${poll.slug}/results`)));
 
-    // Check-then-insert with no lock: every request passes "has this browser voted?" before any insert lands.
-    // Observed today: 2 ballot rows for one browser (one per option) plus several unique-constraint 500s.
+    // Without the poll-row lock every request passed "has this browser voted?" before any insert landed:
+    // 2 ballot rows for one browser (one per option) plus several unique-constraint 500s, 10/10 runs.
     const responses = await Promise.all(
       Array.from({ length: 10 }, (_, i) => castVote(poll.slug, "browser-1", [i % 2 ? margherita.id : pepperoni.id])),
     );
@@ -134,11 +134,27 @@ describe("castVote known bugs (fixed in step 3)", () => {
     expect(await rowsFor(poll.id, "browser-1")).toHaveLength(1);
   });
 
-  for (const target of ["pending suggestion", "declined suggestion", "another poll's option"] as const) {
-    it.fails(`rejects a vote for a ${target} (400)`, async () => {
+  it("a vote that arrives mid-settle waits for it, then gets 409", async () => {
+    const { poll, margherita } = await seedPoll();
+
+    let vote: Promise<request.Response> | undefined;
+    await db.transaction(async (tx) => {
+      // An in-flight settle: holds the poll's row lock until this callback returns and commits.
+      await tx.update(polls).set({ status: "settled", settledAt: new Date() }).where(eq(polls.id, poll.id));
+      vote = castVote(poll.slug, "browser-1", [margherita.id]).then((r) => r); // .then() sends it; supertest is lazy
+      await new Promise((resolve) => setTimeout(resolve, 300)); // long enough for the vote to block on FOR UPDATE
+    });
+
+    // Without the lock the vote read "open" before the settle committed, and its ballot landed on a closed poll.
+    expect((await vote!).status).toBe(409);
+    expect(await rowsFor(poll.id)).toHaveLength(0);
+  });
+
+  for (const target of ["a pending suggestion", "a declined suggestion", "another poll's option"] as const) {
+    it(`rejects a vote for ${target} (400)`, async () => {
       const { poll, pending, declined } = await seedPoll();
       const other = await seedPoll();
-      const optionId = { "pending suggestion": pending.id, "declined suggestion": declined.id, "another poll's option": other.margherita.id }[target];
+      const optionId = { "a pending suggestion": pending.id, "a declined suggestion": declined.id, "another poll's option": other.margherita.id }[target];
 
       const res = await castVote(poll.slug, "browser-1", [optionId]);
 

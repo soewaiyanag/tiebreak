@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import type { CastVoteInput, CastVoteResult, Option, PublicOption, PublicPoll, SuggestOptionInput } from "@tiebreak/shared";
 import { db } from "../db/client.js";
-import { options, votes, type polls } from "../db/schema.js";
+import { options, polls, votes } from "../db/schema.js";
 import { PollQueries } from "../common/queries.js";
 import { PollState } from "../common/poll-state.js";
 import { Mappers } from "../common/mappers.js";
@@ -50,41 +50,55 @@ export class PublicService {
    * votes_poll_voter_option_unique for why the constraint alone can't tell
    * "this voter already has a ballot in" from "this exact
    * (poll, voter, option) row already exists".
+   *
+   * That check-then-insert runs in one transaction holding the poll's row
+   * lock (SELECT ... FOR UPDATE), so concurrent votes on a poll take turns:
+   * a double-tap's second request waits, then sees the first one's ballot.
+   * settle/reopen UPDATE the same row, so they wait their turn too — a vote
+   * can't slip in after a close. Every query inside uses `tx`, never `db`:
+   * borrowing a second pool connection while holding the lock can starve
+   * the pool. Covered by test/votes.test.ts.
    */
   static async castVote(slug: string, input: CastVoteInput): Promise<CastVoteResult> {
     const poll = await PublicService.requirePoll(slug);
     const { voterName, voterAvatar, voterToken, optionIds } = input;
+    const ballotIds = new Set((await PollQueries.ballotOptions(poll.id)).map((o) => o.id));
 
-    const [existingVote] = await db
-      .select({ id: votes.id })
-      .from(votes)
-      .where(and(eq(votes.pollId, poll.id), eq(votes.voterToken, voterToken)))
-      .limit(1);
+    const alreadyVoted = await db.transaction(async (tx) => {
+      const [locked] = await tx.select().from(polls).where(eq(polls.id, poll.id)).for("update");
 
-    if (existingVote) {
-      return { alreadyVoted: true, results: await ResultsService.build(poll) };
-    }
+      const [existingVote] = await tx
+        .select({ id: votes.id })
+        .from(votes)
+        .where(and(eq(votes.pollId, poll.id), eq(votes.voterToken, voterToken)))
+        .limit(1);
+      if (existingVote) return true;
 
-    if (PollState.effectiveStatus(poll) !== "open") {
-      throw HttpError.conflict("This poll has closed.");
-    }
-    if (optionIds.length === 0 || optionIds.length > poll.maxChoices) {
-      throw HttpError.badRequest(`Pick between 1 and ${poll.maxChoices} options.`);
-    }
+      if (PollState.effectiveStatus(locked) !== "open") {
+        throw HttpError.conflict("This poll has closed.");
+      }
+      if (optionIds.length > locked.maxChoices) {
+        throw HttpError.badRequest(`Pick between 1 and ${locked.maxChoices} options.`);
+      }
+      // The FK only proves the option exists somewhere; it must be on *this* ballot (not pending, declined, or another poll's).
+      if (!optionIds.every((id) => ballotIds.has(id))) {
+        throw HttpError.badRequest("That option isn't on this poll's ballot.");
+      }
 
-    await db.insert(votes).values(
-      optionIds.map((optionId) => ({
-        pollId: poll.id,
-        optionId,
-        voterName,
-        voterSeed: voterAvatar.seed,
-        voterTint: voterAvatar.tint,
-        voterToken,
-      })),
-    );
+      await tx.insert(votes).values(
+        optionIds.map((optionId) => ({
+          pollId: poll.id,
+          optionId,
+          voterName,
+          voterSeed: voterAvatar.seed,
+          voterTint: voterAvatar.tint,
+          voterToken,
+        })),
+      );
+      return false;
+    });
 
-    const results = await ResultsService.build(poll);
-    return { alreadyVoted: false, results };
+    return { alreadyVoted, results: await ResultsService.build(poll) };
   }
 
   static async suggestOption(slug: string, input: SuggestOptionInput): Promise<Option> {

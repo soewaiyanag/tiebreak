@@ -104,8 +104,12 @@ per-instance (fix would be Postgres LISTEN/NOTIFY).
       bugs. Measured: 10 parallel votes from one browser leave **2 ballot rows**
       plus 6-8 unique-constraint 500s, 10/10 runs — but only with a warm
       connection pool; cold connections stagger requests enough to hide it.
-- [ ] **3. Race-safe voting** — `castVote` in a transaction with the poll row
-      locked `FOR UPDATE`; reject option ids that aren't on this poll's ballot.
+- [x] **3. Race-safe voting** — `castVote` runs in one transaction holding
+      the poll's row lock (`SELECT … FOR UPDATE`): concurrent votes on a poll
+      take turns, and settle/reopen (which UPDATE that row) can't interleave
+      with a vote. Option ids must be on this poll's ballot (400 otherwise).
+      All 4 `it.fails` flipped to `it`, plus a deterministic mid-settle test
+      (fails on the old code with a 200). 11/11 green.
 - [ ] **4. Indexes** — `options(poll_id)`, `polls(creator_id)`; migration
       generated, applying it to production is a separate decision.
 - [ ] **5. CI + Docker Compose** — GitHub Actions (typecheck, tests, build);

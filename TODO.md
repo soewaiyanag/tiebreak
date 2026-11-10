@@ -98,9 +98,12 @@ per-instance (fix would be Postgres LISTEN/NOTIFY).
       `@tiebreak/shared` types via `satisfies`) + `middleware/validate.middleware.ts`
       on the 4 write routes. Malformed bodies are now 400s with a field path,
       not 500s; duplicate `optionIds` are rejected up front.
-- [ ] **2. Test harness** — Vitest + supertest + Testcontainers Postgres
-      (mirrors sathinkyaung); includes a concurrency test that fails on the
-      current `castVote`.
+- [x] **2. Test harness** — `yarn test`: Vitest + supertest against the real
+      `app`, on a throwaway Postgres 17 (Testcontainers, needs Docker) with the
+      real migrations applied. 6 passing tests + 4 `it.fails` pinning today's
+      bugs. Measured: 10 parallel votes from one browser leave **2 ballot rows**
+      plus 6-8 unique-constraint 500s, 10/10 runs — but only with a warm
+      connection pool; cold connections stagger requests enough to hide it.
 - [ ] **3. Race-safe voting** — `castVote` in a transaction with the poll row
       locked `FOR UPDATE`; reject option ids that aren't on this poll's ballot.
 - [ ] **4. Indexes** — `options(poll_id)`, `polls(creator_id)`; migration

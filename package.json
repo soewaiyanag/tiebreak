@@ -14,6 +14,7 @@
     "dev:server": "yarn workspace @tiebreak/server dev",
     "build": "yarn workspace @tiebreak/client build && yarn workspace @tiebreak/server build",
     "lint": "yarn workspace @tiebreak/client lint && yarn workspace @tiebreak/server lint",
+    "test": "yarn workspace @tiebreak/server test",
     "test:smoke": "yarn workspace @tiebreak/server test:smoke"
   },
   "devDependencies": {

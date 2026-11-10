@@ -13,7 +13,7 @@ import { HttpError } from "./common/errors.js";
 export const app = express();
 
 /** Request logging — same idea as Hono's, just Express's usual choice. */
-app.use(morgan("dev"));
+app.use(morgan("dev", { skip: () => process.env.NODE_ENV === "test" }));
 
 /**
  * CORS: the browser blocks cross-origin calls from the client unless the

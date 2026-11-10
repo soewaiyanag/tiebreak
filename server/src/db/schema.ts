@@ -7,6 +7,7 @@ import {
   boolean,
   timestamp,
   unique,
+  index,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
@@ -33,7 +34,10 @@ export const polls = pgTable("polls", {
 
   // Nullable self-reference — set only on a tiebreak round's child poll.
   parentPollId: uuid("parent_poll_id").references((): AnyPgColumn => polls.id),
-});
+}, (table) => [
+  // The creator dashboard's lookup (PollsService.list). slug already has one via its UNIQUE.
+  index("polls_creator_id_idx").on(table.creatorId),
+]);
 
 export const options = pgTable("options", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -53,7 +57,11 @@ export const options = pgTable("options", {
 
   source: optionSourceEnum("source").notNull(),
   suggestionStatus: suggestionStatusEnum("suggestion_status"),
-});
+}, (table) => [
+  // Every ballot/results/vote request filters options by poll. Postgres never auto-indexes FK columns.
+  // (votes needs no poll_id index: votes_poll_voter_option_unique leads with poll_id and serves it.)
+  index("options_poll_id_idx").on(table.pollId),
+]);
 
 export const votes = pgTable(
   "votes",

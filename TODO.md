@@ -110,8 +110,11 @@ per-instance (fix would be Postgres LISTEN/NOTIFY).
       with a vote. Option ids must be on this poll's ballot (400 otherwise).
       All 4 `it.fails` flipped to `it`, plus a deterministic mid-settle test
       (fails on the old code with a 200). 11/11 green.
-- [ ] **4. Indexes** — `options(poll_id)`, `polls(creator_id)`; migration
-      generated, applying it to production is a separate decision.
+- [~] **4. Indexes** — `options_poll_id_idx`, `polls_creator_id_idx` in
+      `schema.ts` → `drizzle/0001_lean_hiroim.sql`. `votes` needs none: its
+      unique index leads with `poll_id`. EXPLAIN ANALYZE at 20k polls / 80k
+      options: ballot 4.4 ms seq scan → 0.07 ms index; dashboard 1.4 ms →
+      0.05 ms. **Not yet applied to the production Neon branch.**
 - [ ] **5. CI + Docker Compose** — GitHub Actions (typecheck, tests, build);
       Postgres-only compose file for local dev. Server has no ESLint config yet.
 - [ ] **6. README** — Mermaid architecture + ERD, local run, testing, why no

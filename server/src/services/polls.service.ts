@@ -28,11 +28,8 @@ export class PollsService {
     return option;
   }
 
+  /** `input` is already validated by createPollSchema (2-10 options, ISO closesAt) — see polls.routes.ts. */
   static async create(userId: string, input: CreatePollInput): Promise<Poll> {
-    if (input.options.length < 2 || input.options.length > 10) {
-      throw HttpError.badRequest("A poll needs 2 to 10 options.");
-    }
-
     const [poll] = await db
       .insert(polls)
       .values({
@@ -97,17 +94,13 @@ export class PollsService {
     return Mappers.toPoll(updated);
   }
 
+  /** `input.closesAt` is already checked to be a future date by reopenPollSchema — see polls.routes.ts. */
   static async reopen(userId: string, pollId: string, input: ReopenPollInput): Promise<Poll> {
     await PollsService.requireOwnedPoll(userId, pollId);
 
-    const closesAt = new Date(input.closesAt);
-    if (Number.isNaN(closesAt.getTime()) || closesAt <= new Date()) {
-      throw HttpError.badRequest("Reopening needs a new closing time in the future.");
-    }
-
     const [updated] = await db
       .update(polls)
-      .set({ status: "open", settledAt: null, closesAt })
+      .set({ status: "open", settledAt: null, closesAt: new Date(input.closesAt) })
       .where(eq(polls.id, pollId))
       .returning();
     return Mappers.toPoll(updated);

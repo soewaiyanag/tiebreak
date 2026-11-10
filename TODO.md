@@ -86,6 +86,30 @@ settle → vote-after-close correctly rejected → reopen requires a future date
 → SSE push confirmed live on a vote → multi-choice vote (2 rows, same voter)
 confirms the schema fix.
 
+## Hardening (started 2026-11-10) — one feature at a time, each approved before the next
+
+Triaged from a pasted "make it enterprise-ready" list. Skipped on purpose:
+**Redis** (status is derived at read time from `closesAt`, so a cached
+result would keep saying "open" after the deadline) and **Socket.io** (SSE
+already does the job). Documented instead of built: SSE fan-out is
+per-instance (fix would be Postgres LISTEN/NOTIFY).
+
+- [x] **1. Request validation (Zod)** — `common/schemas.ts` (tied to
+      `@tiebreak/shared` types via `satisfies`) + `middleware/validate.middleware.ts`
+      on the 4 write routes. Malformed bodies are now 400s with a field path,
+      not 500s; duplicate `optionIds` are rejected up front.
+- [ ] **2. Test harness** — Vitest + supertest + Testcontainers Postgres
+      (mirrors sathinkyaung); includes a concurrency test that fails on the
+      current `castVote`.
+- [ ] **3. Race-safe voting** — `castVote` in a transaction with the poll row
+      locked `FOR UPDATE`; reject option ids that aren't on this poll's ballot.
+- [ ] **4. Indexes** — `options(poll_id)`, `polls(creator_id)`; migration
+      generated, applying it to production is a separate decision.
+- [ ] **5. CI + Docker Compose** — GitHub Actions (typecheck, tests, build);
+      Postgres-only compose file for local dev. Server has no ESLint config yet.
+- [ ] **6. README** — Mermaid architecture + ERD, local run, testing, why no
+      Redis, known limitations.
+
 ## How to read the rest of this file
 
 - `[ ]` not started · `[~]` in progress · `[x]` done

@@ -11,6 +11,14 @@ export const AVATAR_TINT_BG_CLASS: Record<AvatarTint, string> = {
   e3d2f2: "bg-tint-lilac",
 };
 
+/** Spoken names for the tint picker, so a screen reader hears "Peach", not a hex code. */
+export const AVATAR_TINT_NAME: Record<AvatarTint, string> = {
+  f8c9b9: "Peach",
+  cbe2d8: "Mint",
+  f6e0a4: "Butter",
+  e3d2f2: "Lilac",
+};
+
 /** Hosted, keyless path (spec/technical-requirements.md "Avatars (DiceBear)"). */
 export function avatarUrl(avatar: Avatar): string {
   const seed = encodeURIComponent(avatar.seed);

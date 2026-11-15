@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import type { AvatarTint } from "@tiebreak/shared";
 import { Avatar } from "../ui/Avatar";
-import { AVATAR_TINT_BG_CLASS, AVATAR_TINTS } from "../../lib/dicebear";
+import { AVATAR_TINT_BG_CLASS, AVATAR_TINT_NAME, AVATAR_TINTS } from "../../lib/dicebear";
 import { INPUT_CLASSES } from "../ui/input-classes";
 import { FormField } from "../ui/FormField";
 import { cn } from "../../lib/cn";
@@ -43,20 +43,26 @@ export const AvatarPicker = forwardRef<HTMLInputElement, AvatarPickerProps>(func
 
         <fieldset>
           <legend className="font-body text-sm font-bold text-cocoa">Pick a color</legend>
-          <div className="mt-1.5 flex gap-2">
+          <div className="mt-2 flex gap-2.5">
             {AVATAR_TINTS.map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => onTintChange(t)}
                 aria-pressed={tint === t}
-                aria-label={`Tint ${t}`}
+                aria-label={AVATAR_TINT_NAME[t]}
+                data-down={tint === t}
                 className={cn(
-                  "h-11 w-11 rounded-full border-[length:var(--border-chip)] border-cocoa transition-transform duration-150 ease-out hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:scale-100",
+                  "piece piece-chip flex h-11 w-11 items-center justify-center rounded-full border-2 border-cocoa text-cocoa focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2 [@media(hover:hover)]:hover:animate-[wiggle_0.4s_ease-in-out] motion-reduce:hover:animate-none",
                   AVATAR_TINT_BG_CLASS[t],
-                  tint === t && "scale-110 ring-[3px] ring-cocoa ring-offset-2",
                 )}
-              />
+              >
+                {tint === t && (
+                  <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true" className="animate-[check-in_0.25s_var(--ease-spring)] motion-reduce:animate-none">
+                    <path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </button>
             ))}
           </div>
         </fieldset>

@@ -8,6 +8,7 @@ import { INPUT_CLASSES } from "../components/ui/input-classes";
 import { linkButtonClasses } from "../components/ui/link-button-classes";
 import { usePollsApi } from "../hooks/useSessionContext";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { CloseIcon } from "../components/ui/CloseIcon";
 
 const MIN_OPTIONS = 2;
 const MAX_OPTIONS = 10;
@@ -117,9 +118,9 @@ export function PollCreate() {
                   onClick={() => removeOption(index)}
                   disabled={options.length <= MIN_OPTIONS}
                   aria-label={`Remove option ${index + 1}`}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-cocoa-soft transition-[color,background-color,transform] duration-150 hover:scale-110 hover:bg-cream-deep hover:text-cocoa active:scale-90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal disabled:opacity-30 disabled:hover:scale-100 motion-reduce:transition-none motion-reduce:hover:scale-100"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-cocoa-soft transition-[color,background-color,rotate] duration-200 ease-[var(--ease-out)] hover:rotate-90 hover:bg-cream-deep hover:text-cocoa focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal disabled:opacity-30 disabled:hover:rotate-0 disabled:hover:bg-transparent motion-reduce:transition-none motion-reduce:hover:rotate-0"
                 >
-                  ×
+                  <CloseIcon />
                 </button>
               </div>
             ))}

@@ -77,6 +77,72 @@
   }
 }
 
+/* The game piece: anything you can press sits on a cocoa base edge
+   (--edge). Hover lifts it so the edge thickens, press sinks it flat, and
+   release springs back past rest and settles. The base stays planted
+   throughout because transform and shadow move by the same amount.
+   [data-down="true"] holds a piece pushed in: a picked option, the active
+   tab, the chosen swatch. */
+@layer components {
+  .piece {
+    --edge: var(--edge-piece);
+    --inset: 0 0 0 transparent; /* filled buttons add their pressed-plastic inset */
+    box-shadow: var(--inset), 0 var(--edge) 0 var(--color-cocoa);
+    transition:
+      transform 220ms var(--ease-spring),
+      box-shadow 220ms var(--ease-spring),
+      background-color 150ms ease-out,
+      border-color 150ms ease-out,
+      color 150ms ease-out;
+  }
+  .piece-chip {
+    --edge: var(--edge-chip);
+  }
+
+  @media (hover: hover) {
+    .piece:hover:not(:disabled, [data-disabled="true"], [data-down="true"]) {
+      transform: translateY(-2px);
+      box-shadow: var(--inset), 0 calc(var(--edge) + 2px) 0 var(--color-cocoa);
+    }
+  }
+
+  .piece:active:not(:disabled, [data-disabled="true"]),
+  .piece[data-down="true"] {
+    transform: translateY(var(--edge));
+    box-shadow: var(--inset), 0 0 0 var(--color-cocoa);
+    transition-duration: 70ms; /* sinking is instant; only the release springs */
+  }
+
+  /* Unavailable pieces lie flat on the table: no edge to press. */
+  .piece:disabled,
+  .piece[data-disabled="true"] {
+    transform: translateY(var(--edge));
+    box-shadow: none;
+  }
+
+  /* Reduced motion keeps every state (raised, pressed, flat), just without
+     the travel and the overshoot. */
+  @media (prefers-reduced-motion: reduce) {
+    .piece {
+      transition-property: background-color, border-color, color;
+    }
+  }
+
+  /* A swatch shaking its head as you hover past: "pick me". */
+  @keyframes wiggle {
+    0%,
+    100% {
+      rotate: 0deg;
+    }
+    25% {
+      rotate: -8deg;
+    }
+    75% {
+      rotate: 6deg;
+    }
+  }
+}
+
 /* Expose the token values as Tailwind theme variables so you can use
    utilities like bg-cream, text-cocoa, bg-tangerine-deep, rounded-lg,
    font-display, etc. Tailwind v4. If you're not using Tailwind, delete

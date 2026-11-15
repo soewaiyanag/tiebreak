@@ -51,3 +51,21 @@ export function formatRelativeTime(iso: string, now: Date = new Date()): string 
 
   return weekdayFormatter.format(then);
 }
+
+/**
+ * The status sticker's text: a live countdown inside the last day, where
+ * "in 2h 14m" is easier to act on than a clock time, and the clock time
+ * beyond that, where a countdown in days would be noise.
+ */
+export function formatCountdown(closesAt: string, now: Date = new Date()): string {
+  const msLeft = new Date(closesAt).getTime() - now.getTime();
+  if (msLeft <= 0) return "Closing now";
+  if (msLeft >= 24 * 60 * 60 * 1000) return `Closes ${formatClosingTime(closesAt, now)}`;
+
+  const minutesLeft = Math.ceil(msLeft / 60_000);
+  if (minutesLeft <= 1) return "Closes in under a minute";
+  const hours = Math.floor(minutesLeft / 60);
+  const minutes = minutesLeft % 60;
+  if (hours === 0) return `Closes in ${minutes}m`;
+  return minutes === 0 ? `Closes in ${hours}h` : `Closes in ${hours}h ${minutes}m`;
+}

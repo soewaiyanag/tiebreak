@@ -1,6 +1,6 @@
 import type { Option, PollDetail } from "@tiebreak/shared";
 import { Card } from "../ui/Card";
-import { Pill } from "../ui/Pill";
+import { StatusSticker } from "./StatusSticker";
 import { Button } from "../ui/Button";
 import { CopyButton } from "../ui/CopyButton";
 import { LeaderCard } from "./LeaderCard";
@@ -8,7 +8,6 @@ import { OptionRow } from "./OptionRow";
 import { VoterCrewStack } from "./VoterCrewStack";
 import { PendingSuggestionCard } from "./PendingSuggestionCard";
 import { presentTally } from "../../lib/tally";
-import { formatClosingTime } from "../../lib/format";
 import { ballotOf } from "../../lib/poll-options";
 import type { RefObject } from "react";
 
@@ -39,13 +38,7 @@ export function LivePollBody({
 
   return (
     <>
-      <Pill tone="teal">
-        <span className="h-1.5 w-1.5 rounded-full bg-teal-deep" aria-hidden="true" />
-        Voting open
-      </Pill>
-      <span className="ml-2 inline-block">
-        <Pill tone="neutral">Closes {formatClosingTime(poll.closesAt)}</Pill>
-      </span>
+      <StatusSticker state="open" closesAt={poll.closesAt} />
 
       <h1 ref={headingRef} tabIndex={-1} className="mt-3 text-balance font-display text-2xl font-black text-cocoa">
         {poll.title}

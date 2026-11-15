@@ -19,18 +19,20 @@ export function BallotFieldset({ options, type, maxChoices, selectedIds, onToggl
       <legend className="font-body text-sm font-bold text-cocoa">
         {type === "single" ? "Pick one" : `Pick up to ${maxChoices}`}
       </legend>
-      <div className="mt-2 space-y-2.5">
+      <div className="mt-2 space-y-3">
         {options.map((option) => {
           const selected = selectedIds.includes(option.id);
           const disabled = !selected && atLimit;
           return (
             <label
               key={option.id}
+              data-down={selected}
+              data-disabled={disabled}
               className={cn(
-                "flex cursor-pointer items-center gap-3 rounded-[length:var(--radius-md)] border-[length:var(--border-chip)] border-cocoa bg-card px-4 py-3.5 transition-[border-color,background-color,transform] duration-150 ease-out active:scale-[0.99] motion-reduce:transition-none motion-reduce:active:scale-100",
-                !selected && !disabled && "hover:border-cocoa/70 hover:bg-cream-deep/40",
-                selected && "border-[length:var(--border-card)] border-tangerine-deep bg-cream-deep",
-                disabled && "cursor-not-allowed opacity-50 active:scale-100",
+                "piece piece-chip flex cursor-pointer items-center gap-3 rounded-[length:var(--radius-md)] border-2 border-cocoa bg-card px-4 py-3.5",
+                !selected && !disabled && "hover:bg-cream-deep/50",
+                selected && "border-tangerine-deep bg-cream-deep",
+                disabled && "cursor-not-allowed opacity-50",
               )}
             >
               <input
@@ -56,7 +58,7 @@ export function BallotFieldset({ options, type, maxChoices, selectedIds, onToggl
                   height="20"
                   viewBox="0 0 20 20"
                   aria-hidden="true"
-                  className="shrink-0 animate-[check-in_0.2s_ease-out] text-tangerine-deep motion-reduce:animate-none"
+                  className="shrink-0 animate-[check-in_0.25s_var(--ease-spring)] text-tangerine-deep motion-reduce:animate-none"
                 >
                   <path
                     d="M4 10.5l4 4 8-9"

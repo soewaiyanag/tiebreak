@@ -1,24 +1,26 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "../../lib/cn";
 
-type Tone = "teal" | "butter" | "neutral";
+type Tone = "butter" | "neutral";
 
 const TONE_CLASSES: Record<Tone, string> = {
-  teal: "bg-teal-soft text-teal-deep",
-  butter: "bg-tint-butter-soft text-cocoa",
-  neutral: "bg-cream-deep text-cocoa-soft",
+  butter: "bg-tint-butter-soft",
+  neutral: "bg-cream-deep",
 };
 
 interface PillProps extends HTMLAttributes<HTMLSpanElement> {
   tone?: Tone;
 }
 
-/** Status is always words plus color (guidance/accessibility.md) — the dot/icon before children carries no meaning alone. */
+/**
+ * A small label in the same sticker style as StatusSticker (ink outline,
+ * sentence case), minus the tilt: it's a note on the card, not the poll's status.
+ */
 export function Pill({ tone = "neutral", className, children, ...props }: PillProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-body text-xs font-extrabold uppercase tracking-[0.06em]",
+        "inline-flex items-center gap-1.5 rounded-[length:var(--radius-md)] border-2 border-cocoa px-2.5 py-1 font-display text-sm font-bold text-cocoa",
         TONE_CLASSES[tone],
         className,
       )}

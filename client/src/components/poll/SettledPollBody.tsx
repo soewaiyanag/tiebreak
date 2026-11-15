@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { PollDetail } from "@tiebreak/shared";
-import { Pill } from "../ui/Pill";
+import { StatusSticker } from "./StatusSticker";
 import { Button } from "../ui/Button";
 import { CopyButton } from "../ui/CopyButton";
 import { Reveal } from "./Reveal";
@@ -38,7 +38,7 @@ export function SettledPollBody({ poll, onCopyResult, onReopen }: SettledPollBod
 
   return (
     <>
-      <Pill tone="neutral">Settled</Pill>
+      <StatusSticker state="settled" />
       <h1 className="mt-3 text-balance font-display text-2xl font-black text-cocoa">{poll.title}</h1>
 
       <div className="mt-6">

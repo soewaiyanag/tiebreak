@@ -104,6 +104,15 @@
   --shadow-press-teal: inset 0 -2px 0 rgba(10, 58, 50, 0.4);
   --shadow-press-cocoa: inset 0 -2px 0 rgba(0, 0, 0, 0.35);
 
+  /* Game-piece thickness: interactive things are tokens on the table, with a
+     cocoa base edge under them. Hover lifts the piece, press sinks it flat,
+     release springs it back (see .piece in globals.css). Static cards and
+     pills stay flat, so "has an edge" reads as "you can press this". */
+  --edge-piece: 4px;       /* filled buttons, clickable cards */
+  --edge-chip: 3px;        /* secondary buttons, ballot options, swatches */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* the plastic springing back — release only */
+
   /* Focus — 3px teal ring, offset 2px, on everything interactive */
   --focus-ring: 3px solid var(--color-teal);
   --focus-ring-offset: 2px;

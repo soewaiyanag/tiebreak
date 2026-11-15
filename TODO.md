@@ -125,6 +125,31 @@ per-instance (fix would be Postgres LISTEN/NOTIFY).
 - [ ] **6. README** — Mermaid architecture + ERD, local run, testing, why no
       Redis, known limitations.
 
+## Playful pass (started 2026-11-15) — "make it a real game", one step at a time
+
+Chosen over a full redesign: keep the cream/cocoa/tangerine world, Gabarito +
+Karla, the checked contrast pairs and the honest-results rules; push them
+bolder and add motion. New split from today: Claude builds the frontend, the
+user writes the backend.
+
+- [x] **1. Tactile controls** — `.piece` in `globals.css`: anything pressable
+      sits on a cocoa base edge (`--edge-piece` 4px / `--edge-chip` 3px), lifts
+      on hover, sinks flat on press, springs back on release; disabled pieces
+      lie flat. Applied to every button (`buttonClasses`, now Gabarito with an
+      ink outline), poll cards, ballot options (a picked one stays pushed in),
+      the avatar swatches (wiggle on hover, check when picked, spoken names),
+      and a sliding thumb on the dashboard tabs. Link buttons draw their
+      underline in; "×" glyphs replaced by a drawn `CloseIcon`. Hover is gated
+      to `(hover: hover)`; reduced motion keeps the states, drops the travel.
+      Status pills (uppercase, dot) replaced by `StatusSticker`: an ink-outlined,
+      slightly tilted sticker with a drawn icon that counts down inside the
+      last day ("Closes in 2h 14m", `formatCountdown` + `useNow`), else shows
+      the closing time; "Settled" with a check. `Pill` restyled to match.
+- [ ] **2. The vote moment** — pick, stamp, join the crew
+- [ ] **3. Live results motion** — bars slide and re-sort, ticks stamp in
+- [ ] **4. The reveal** — drumroll → winner, tie state
+- [ ] **5. Landing + dashboard** — show a live poll, fill the empty space
+
 ## How to read the rest of this file
 
 - `[ ]` not started · `[~]` in progress · `[x]` done

@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import { ToastContext, type ToastOptions } from "../../hooks/useToast";
 import { useAnnouncer } from "../../hooks/useAnnouncer";
+import { CloseIcon } from "./CloseIcon";
 import { buttonClasses } from "./button-classes";
 
 /** "Not this time" needs an undo (guidance/patterns.md) — a generous timeout, not a snap decision. */
@@ -50,9 +51,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               type="button"
               onClick={dismiss}
               aria-label="Dismiss"
-              className="rounded-full p-1 text-cream-bright/80 transition-transform duration-150 hover:scale-110 hover:text-cream-bright active:scale-90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal motion-reduce:transition-none motion-reduce:hover:scale-100"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-cream-bright/80 transition-[color,rotate] duration-200 ease-[var(--ease-out)] hover:rotate-90 hover:text-cream-bright focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal motion-reduce:transition-none motion-reduce:hover:rotate-0"
             >
-              ×
+              <CloseIcon />
             </button>
           </div>
         </div>

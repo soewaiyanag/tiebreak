@@ -1,5 +1,5 @@
 import type { PollResults, PublicPoll } from "@tiebreak/shared";
-import { Pill } from "../ui/Pill";
+import { StatusSticker } from "./StatusSticker";
 import { Reveal } from "./Reveal";
 
 interface VoteClosedViewProps {
@@ -13,7 +13,7 @@ interface VoteClosedViewProps {
 export function VoteClosedView({ poll, results, votedOptionLabels, viewerOptionId }: VoteClosedViewProps) {
   return (
     <>
-      <Pill tone="neutral">Settled</Pill>
+      <StatusSticker state="settled" />
       <h1 className="mt-3 text-balance font-display text-2xl font-black text-cocoa">{poll.title}</h1>
       {votedOptionLabels && votedOptionLabels.length > 0 && (
         <p className="mt-2 font-body text-sm font-bold text-teal-deep">You backed {votedOptionLabels.join(" and ")}</p>

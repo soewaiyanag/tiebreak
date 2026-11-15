@@ -73,15 +73,22 @@ export function Dashboard() {
     <AppShell>
       <h1 className="font-display text-xl font-extrabold text-cocoa">Your polls</h1>
 
-      <div className="mt-5 inline-flex rounded-full border-[length:var(--border-chip)] border-cocoa bg-card p-1">
+      {/* A two-position slider: the card-colored thumb slides under the active tab. */}
+      <div className="relative mt-5 inline-grid grid-cols-2 rounded-full border-2 border-cocoa bg-cream-deep p-1">
+        <span
+          aria-hidden="true"
+          className={`absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full border-2 border-cocoa bg-card transition-transform duration-300 ease-[var(--ease-spring)] motion-reduce:transition-none ${
+            tab === "closed" ? "translate-x-full" : ""
+          }`}
+        />
         {(["open", "closed"] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
             aria-pressed={tab === t}
-            className={`rounded-full px-4 py-1.5 font-body text-sm font-bold transition-[background-color,color,transform] duration-150 ease-out active:scale-95 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal motion-reduce:transition-none motion-reduce:active:scale-100 ${
-              tab === t ? "bg-cream-deep text-cocoa" : "text-cocoa-soft hover:text-cocoa"
+            className={`relative rounded-full px-5 py-2 font-display text-sm font-bold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal ${
+              tab === t ? "text-cocoa" : "text-cocoa-soft hover:text-cocoa"
             }`}
           >
             {t === "open" ? "My polls" : "Closed"}

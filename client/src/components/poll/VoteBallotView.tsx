@@ -1,11 +1,10 @@
 import type { RefObject } from "react";
 import type { AvatarTint, PublicPoll } from "@tiebreak/shared";
-import { Pill } from "../ui/Pill";
+import { StatusSticker } from "./StatusSticker";
 import { Button } from "../ui/Button";
 import { AvatarPicker } from "./AvatarPicker";
 import { BallotFieldset } from "./BallotFieldset";
 import { linkButtonClasses } from "../ui/link-button-classes";
-import { formatClosingTime } from "../../lib/format";
 
 interface VoteBallotViewProps {
   poll: PublicPoll;
@@ -44,10 +43,7 @@ export function VoteBallotView({
 
   return (
     <>
-      <Pill tone="teal">
-        <span className="h-1.5 w-1.5 rounded-full bg-teal-deep" aria-hidden="true" />
-        Closes {formatClosingTime(poll.closesAt)}
-      </Pill>
+      <StatusSticker state="open" closesAt={poll.closesAt} />
       <h1 className="mt-3 text-balance font-display text-2xl font-black text-cocoa">{poll.title}</h1>
 
       <div className="mt-6">

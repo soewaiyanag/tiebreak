@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { buttonClasses } from "../components/ui/button-classes";
 import { Logo } from "../components/layout/Logo";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { STANDALONE } from "../lib/api-mode";
 
 export function NotFound() {
   useDocumentTitle("Poll not found · Tiebreak");
@@ -14,6 +15,11 @@ export function NotFound() {
         <p className="mt-2 font-body text-base text-cocoa-soft">
           This link doesn't lead anywhere anymore — the poll may have been deleted, or the link's just wrong.
         </p>
+        {STANDALONE && (
+          <p className="mx-auto mt-2 max-w-[46ch] font-body text-base text-cocoa-soft">
+            Demo polls live in the browser that made them, so a link from someone else's demo won't open here.
+          </p>
+        )}
       </div>
       <Link to="/" className={buttonClasses("primary")}>
         Back to Tiebreak

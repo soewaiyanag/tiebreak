@@ -9,6 +9,7 @@ import { Reveal } from "../components/poll/Reveal";
 import { VoterResults } from "../components/poll/VoterResults";
 import { buttonClasses } from "../components/ui/button-classes";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { STANDALONE } from "../lib/api-mode";
 import { cn } from "../lib/cn";
 
 const RISO_HEADING = "[text-shadow:0.045em_0.045em_0_var(--color-butter)]";
@@ -22,12 +23,20 @@ export function Landing() {
       <header className="mx-auto flex max-w-page items-center justify-between px-4 py-6">
         <Logo />
         <nav className="flex items-center gap-3">
-          <Link to="/login" className={buttonClasses("secondary")}>
-            Log in
-          </Link>
-          <Link to="/signup" className={buttonClasses("primary")}>
-            Sign up
-          </Link>
+          {STANDALONE ? (
+            <Link to="/guest" className={buttonClasses("primary")}>
+              Try the demo
+            </Link>
+          ) : (
+            <>
+              <Link to="/login" className={buttonClasses("secondary")}>
+                Log in
+              </Link>
+              <Link to="/signup" className={buttonClasses("primary")}>
+                Sign up
+              </Link>
+            </>
+          )}
         </nav>
       </header>
 
@@ -50,9 +59,11 @@ export function Landing() {
               <Link to="/guest" className={buttonClasses("primary", "px-7 py-3")}>
                 Try the demo
               </Link>
-              <Link to="/signup" className={buttonClasses("secondary", "px-7 py-3")}>
-                Create an account
-              </Link>
+              {!STANDALONE && (
+                <Link to="/signup" className={buttonClasses("secondary", "px-7 py-3")}>
+                  Create an account
+                </Link>
+              )}
             </div>
           </div>
           <LandingDemo />

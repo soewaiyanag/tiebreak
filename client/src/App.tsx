@@ -1,4 +1,5 @@
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { STANDALONE } from "./lib/api-mode";
 import { RouteTransition } from "./components/layout/RouteTransition";
 import { SessionProvider } from "./lib/session";
 import { RequireAuth } from "./components/layout/RequireAuth";
@@ -25,8 +26,8 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/guest" element={<Guest />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
+                <Route path="/login" element={STANDALONE ? <Navigate to="/app" replace /> : <Login />} />
+                <Route path="/signup" element={STANDALONE ? <Navigate to="/app" replace /> : <Signup />} />
                 <Route
                   path="/app"
                   element={

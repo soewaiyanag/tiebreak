@@ -6,7 +6,7 @@ import { Card } from "../components/ui/Card";
 import { CopyButton } from "../components/ui/CopyButton";
 import { buttonClasses } from "../components/ui/button-classes";
 import { Skeleton } from "../components/ui/Skeleton";
-import { usePollsApi } from "../hooks/useSessionContext";
+import { usePollsApi, useSessionContext } from "../hooks/useSessionContext";
 import { useAnnouncer } from "../hooks/useAnnouncer";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { NotFound } from "./NotFound";
@@ -14,6 +14,8 @@ import { NotFound } from "./NotFound";
 export function PollShare() {
   const { id } = useParams<{ id: string }>();
   const api = usePollsApi();
+  const { mode } = useSessionContext();
+  const isDemo = mode === "guest";
   const { announceStatus } = useAnnouncer();
   const [poll, setPoll] = useState<PollDetail | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -22,7 +24,10 @@ export function PollShare() {
 
   useEffect(() => {
     if (!id) return;
-    void api.getPoll(id).then(setPoll).catch(() => setNotFound(true));
+    void api
+      .getPoll(id)
+      .then(setPoll)
+      .catch(() => setNotFound(true));
   }, [api, id]);
 
   if (notFound) return <NotFound />;
@@ -47,7 +52,9 @@ export function PollShare() {
       <div className="mx-auto max-w-form text-center">
         <h1 className="font-display text-xl font-extrabold text-cocoa">Your poll's live</h1>
         <p className="mt-2 font-body text-base text-cocoa-soft">
-          Paste this into the chat — anyone with the link can vote, no account needed.
+          {isDemo
+            ? "In the demo, polls live in this browser, so the link only opens here. Open it to vote the way your crew would."
+            : "Paste this into the chat — anyone with the link can vote, no account needed."}
         </p>
 
         <Card className="mt-6 flex items-center justify-between gap-3 bg-cream-deep">
@@ -55,9 +62,16 @@ export function PollShare() {
           <CopyButton onCopy={copyLink} label="Copy link" className="shrink-0" />
         </Card>
 
-        <Link to={`/app/polls/${poll.id}`} className={buttonClasses("secondary", "mt-6")}>
-          Go to your poll
-        </Link>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          {isDemo && (
+            <Link to={`/p/${poll.slug}`} className={buttonClasses("secondary")}>
+              Open the vote page
+            </Link>
+          )}
+          <Link to={`/app/polls/${poll.id}`} className={buttonClasses("secondary")}>
+            Go to your poll
+          </Link>
+        </div>
       </div>
     </AppShell>
   );

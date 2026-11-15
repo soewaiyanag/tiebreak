@@ -10,7 +10,7 @@ A group polling app — create a poll, share a link, the group votes, ties get s
 - **Backend** (`server/`) — built: layered Express + Drizzle + PostgreSQL API (routes → controllers → services, Nest-flavored but framework-free), real Neon Auth integration, the settle-at-read-time poll state machine, and derived (never stored) vote tallies.
 - **Deploy** — live. Client and server ship as two Vercel Services in one project (`vercel.json`), same origin, no CORS hop. Database on Neon.
 
-Try it at `/guest` for the no-setup simulation, or sign up for the real thing.
+The live site runs **standalone** while the backend is rebuilt: every feature works against an in-browser store, with nothing to sign up for (polls stay in your browser). Builds with `VITE_API_MODE=remote` talk to the real API instead.
 
 ## Stack
 
@@ -39,4 +39,4 @@ cp .env.example .env.local   # fill in DATABASE_URL, NEON_AUTH_BASE_URL, NEON_AU
 yarn dev
 ```
 
-`yarn dev` runs the client (Vite) and server (Express, via `tsx watch`) together.
+`yarn dev` runs the client (Vite) and server (Express, via `tsx watch`) together. Set `VITE_API_MODE=remote` in `.env.local` so the client uses that server instead of the in-browser demo store.

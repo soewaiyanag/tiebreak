@@ -15,6 +15,8 @@
     "build": "yarn workspace @tiebreak/client build && yarn workspace @tiebreak/server build",
     "lint": "yarn workspace @tiebreak/client lint && yarn workspace @tiebreak/server lint",
     "test": "yarn workspace @tiebreak/server test",
+    "db:up": "docker compose up -d --wait postgres",
+    "db:down": "docker compose stop postgres",
     "test:smoke": "yarn workspace @tiebreak/server test:smoke"
   },
   "devDependencies": {

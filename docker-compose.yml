@@ -1,0 +1,30 @@
+# Local Postgres for development, so `yarn dev` doesn't have to write to the
+# Neon production branch. Postgres 17 matches Neon and the integration tests.
+# Host port 5434: 5432 is the usual default and sathinkyaung already uses 5433.
+#
+#   yarn db:up      start it (data survives restarts in the named volume)
+#   yarn db:down    stop it (keeps the data)
+#
+# Then point DATABASE_URL and DATABASE_URL_UNPOOLED in .env.local at
+# postgres://tiebreak:tiebreak@localhost:5434/tiebreak and run
+# `yarn workspace @tiebreak/server db:migrate`. Sign-in still goes through
+# hosted Neon Auth, so keep the NEON_AUTH_* variables.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: tiebreak
+      POSTGRES_PASSWORD: tiebreak
+      POSTGRES_DB: tiebreak
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tiebreak -d tiebreak"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  postgres-data:

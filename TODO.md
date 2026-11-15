@@ -115,8 +115,13 @@ per-instance (fix would be Postgres LISTEN/NOTIFY).
       unique index leads with `poll_id`. EXPLAIN ANALYZE at 20k polls / 80k
       options: ballot 4.4 ms seq scan → 0.07 ms index; dashboard 1.4 ms →
       0.05 ms. **Not yet applied to the production Neon branch.**
-- [ ] **5. CI + Docker Compose** — GitHub Actions (typecheck, tests, build);
-      Postgres-only compose file for local dev. Server has no ESLint config yet.
+- [x] **5. CI + Docker Compose** — `.github/workflows/ci.yml`: server job
+      (typecheck src+tests via `tsconfig.test.json`, Testcontainers tests,
+      build) and client job (lint, `tsc -b` + build), on push to main and PRs.
+      Every step verified in a clean copy of the repo; not yet run on GitHub.
+      `docker-compose.yml` (`yarn db:up`/`db:down`): Postgres 17 on host port
+      5434, verified with migrate + a poll served from it. Server lint stays
+      out of CI: `server/` has no ESLint config, so root `yarn lint` still fails.
 - [ ] **6. README** — Mermaid architecture + ERD, local run, testing, why no
       Redis, known limitations.
 

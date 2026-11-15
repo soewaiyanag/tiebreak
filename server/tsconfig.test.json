@@ -1,0 +1,9 @@
+{
+  // Typecheck-only config covering src *and* the tests (tsconfig.json's rootDir/outDir are for the build, src only).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": ["src", "test", "vitest.config.ts"]
+}

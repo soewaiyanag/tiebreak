@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "NODE_ENV=development tsx watch --env-file ../.env.local src/index.ts",
     "build": "tsc",
+    "typecheck": "tsc -p tsconfig.test.json",
     "start": "NODE_ENV=production node --env-file-if-exists=../.env.local dist/index.js",
     "lint": "eslint .",
     "test": "vitest run",

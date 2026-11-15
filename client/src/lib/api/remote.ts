@@ -57,7 +57,10 @@ export const remoteApi: PollsApi = {
     const startPolling = () => {
       if (pollTimer) return;
       const tick = () => {
-        void request<PollResults>(`/p/${slug}/results`).then((r) => !cancelled && onUpdate(r));
+        // A failed tick is retried on the next interval; the page's own load surfaces real errors.
+        request<PollResults>(`/p/${slug}/results`)
+          .then((r) => !cancelled && onUpdate(r))
+          .catch(() => {});
       };
       tick();
       pollTimer = setInterval(tick, POLL_RESULTS_INTERVAL_MS);

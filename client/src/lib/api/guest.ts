@@ -80,7 +80,9 @@ export const guestApi: PollsApi = {
     let cancelled = false;
     const push = () => {
       void getOrSeedStore().then((store) => {
-        if (!cancelled) onUpdate(computeResults(findPollBySlug(store, slug), store));
+        // A missing poll is already shown as not-found by the page's own load; the feed just has nothing to send.
+        const poll = store.polls.find((p) => p.slug === slug);
+        if (!cancelled && poll) onUpdate(computeResults(poll, store));
       });
     };
     push();

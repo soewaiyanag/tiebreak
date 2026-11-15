@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
-import { FormField } from "../ui/FormField";
-import { INPUT_CLASSES } from "../ui/input-classes";
+import { ClosingTimePicker } from "./ClosingTimePicker";
 
 interface ReopenModalProps {
   open: boolean;
@@ -31,17 +30,7 @@ export function ReopenModal({ open, onClose, onConfirm }: ReopenModalProps) {
         The crew can vote again. Pick a new closing time — the old one has already passed.
       </p>
       <div className="mt-4">
-        <FormField label="New closing time" error={error}>
-          {(props) => (
-            <input
-              {...props}
-              type="datetime-local"
-              value={closesAt}
-              onChange={(e) => setClosesAt(e.target.value)}
-              className={INPUT_CLASSES}
-            />
-          )}
-        </FormField>
+        <ClosingTimePicker legend="New closing time" value={closesAt} onChange={setClosesAt} error={error} />
       </div>
       <div className="mt-6 flex justify-end gap-3">
         <Button variant="secondary" onClick={onClose}>

@@ -73,7 +73,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "w-full max-w-md rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-card p-6 animate-[dialog-in_0.2s_ease-out] motion-reduce:animate-none",
+          "max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-card p-6 animate-[dialog-in_0.2s_ease-out] motion-reduce:animate-none",
           className,
         )}
       >

@@ -186,6 +186,13 @@ step (see `PROGRESS.md`).
       Create form: heading aligned to the form, "Just one / More than one"
       ink chips with an up-to stepper (clamped to the option count on
       submit), suggestions as a switch with a hint.
+- [x] **2e. Exits and consequences** — modals and toasts now leave (160ms,
+      ease-in, toward where they came from; a fade under reduced motion so
+      they still unmount). Moderation runs as a morph view transition
+      (`withViewTransition(…, { morph: true })` names every `data-morph`
+      card/row before and after): an approved suggestion's card travels into
+      its ballot row, other rows slide, a declined card shrinks away, Undo
+      grows it back.
 - [ ] **3. Live results motion** — bars slide and re-sort, ticks stamp in
 - [ ] **4. The reveal** — drumroll → winner, tie state
 - [ ] **5. Landing + dashboard** — show a live poll, fill the empty space

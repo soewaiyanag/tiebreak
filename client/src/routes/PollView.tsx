@@ -68,6 +68,14 @@ export function PollView() {
     });
   }, [api, slug, announceResults]);
 
+  // Moderation swaps one card for one row; fetch first, then commit inside a
+  // morph transition so the card visibly travels into the ballot.
+  async function refreshWithMorph() {
+    if (!id) return;
+    const next = await api.getPoll(id);
+    withViewTransition(() => setPoll(next), { morph: true });
+  }
+
   async function resolveSuggestion(suggestion: Option, action: "approve" | "decline") {
     if (!poll) return;
     const pending = poll.options.filter((o) => o.suggestionStatus === "pending");
@@ -84,12 +92,12 @@ export function PollView() {
         message: `Declined "${suggestion.label}"`,
         actionLabel: "Undo",
         onAction: () => {
-          void api.restoreSuggestion(poll.id, suggestion.id).then(refetch);
+          void api.restoreSuggestion(poll.id, suggestion.id).then(refreshWithMorph);
         },
       });
     }
 
-    refetch();
+    await refreshWithMorph();
     requestAnimationFrame(() => {
       const target = nextFocusId ? document.getElementById(`pending-suggestion-${nextFocusId}`) : headingRef.current;
       target?.focus();

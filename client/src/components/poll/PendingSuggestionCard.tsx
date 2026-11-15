@@ -14,6 +14,7 @@ export function PendingSuggestionCard({ suggestion, onApprove, onDecline, disabl
   return (
     <Card
       id={`pending-suggestion-${suggestion.id}`}
+      data-morph={suggestion.id}
       tabIndex={-1}
       className="flex flex-col gap-4 border-dashed animate-[reveal-in_0.25s_ease-out] motion-reduce:animate-none sm:flex-row sm:items-center sm:justify-between"
     >

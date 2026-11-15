@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { cn } from "../../lib/cn";
 
 interface ModalProps {
@@ -21,6 +21,10 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
   const titleId = useId();
+  // Stays mounted after `open` turns false, just long enough to play the exit.
+  const [mounted, setMounted] = useState(open);
+  if (open && !mounted) setMounted(true);
+  const closing = mounted && !open;
 
   useEffect(() => {
     if (!open) return;
@@ -59,12 +63,21 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-cocoa/40 p-4 sm:items-center animate-[backdrop-in_0.15s_ease-out] motion-reduce:animate-none"
+      className={cn(
+        "fixed inset-0 z-50 flex items-end justify-center bg-cocoa/40 p-4 sm:items-center",
+        closing
+          ? // Exits are shorter than entrances; the reduced-motion exit is a fade so animationend still fires and unmounts.
+            "pointer-events-none animate-[backdrop-out_0.16s_var(--ease-in)_both] motion-reduce:animate-[fade-out_0.12s_linear_both]"
+          : "animate-[backdrop-in_0.15s_ease-out] motion-reduce:animate-none",
+      )}
       onClick={onClose}
+      onAnimationEnd={(e) => {
+        if (closing && e.target === e.currentTarget) setMounted(false);
+      }}
     >
       <div
         ref={dialogRef}
@@ -73,7 +86,10 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-card p-6 animate-[dialog-in_0.2s_ease-out] motion-reduce:animate-none",
+          "max-h-full w-full max-w-md overflow-y-auto overscroll-contain rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-card p-6",
+          closing
+            ? "animate-[dialog-out_0.16s_var(--ease-in)_both] motion-reduce:animate-none"
+            : "animate-[dialog-in_0.2s_ease-out] motion-reduce:animate-none",
           className,
         )}
       >

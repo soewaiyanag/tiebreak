@@ -10,20 +10,23 @@ const TOAST_TIMEOUT_MS = 8000;
 /** Must be nested inside AnnouncerProvider — a shown toast is announced through it. */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<ToastOptions | null>(null);
+  // Dismissing plays the exit first; the toast is removed when it finishes.
+  const [leaving, setLeaving] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { announceStatus } = useAnnouncer();
 
   const dismiss = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    setToast(null);
+    setLeaving(true);
   }, []);
 
   const showToast = useCallback<(options: ToastOptions) => void>(
     (options) => {
       if (timerRef.current) clearTimeout(timerRef.current);
       setToast(options);
+      setLeaving(false);
       announceStatus(options.message);
-      timerRef.current = setTimeout(() => setToast(null), TOAST_TIMEOUT_MS);
+      timerRef.current = setTimeout(() => setLeaving(true), TOAST_TIMEOUT_MS);
     },
     [announceStatus],
   );
@@ -32,7 +35,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={showToast}>
       {children}
       {toast && (
-        <div className="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-center justify-between gap-4 rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-cocoa px-5 py-4 text-cream-bright animate-[toast-in_0.2s_ease-out] motion-reduce:animate-none">
+        <div
+          onAnimationEnd={(e) => {
+            if (!leaving || e.target !== e.currentTarget) return;
+            setToast(null);
+            setLeaving(false);
+          }}
+          className={`fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-center justify-between gap-4 rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-cocoa px-5 py-4 text-cream-bright ${
+            leaving
+              ? "pointer-events-none animate-[toast-out_0.16s_var(--ease-in)_both] motion-reduce:animate-[fade-out_0.12s_linear_both]"
+              : "animate-[toast-in_0.2s_ease-out] motion-reduce:animate-none"
+          }`}
+        >
           <p className="font-body text-sm">{toast.message}</p>
           <div className="flex shrink-0 items-center gap-3">
             {toast.actionLabel && toast.onAction && (

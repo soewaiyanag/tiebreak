@@ -181,6 +181,32 @@
     }
   }
 
+  /* Exits: back toward where each thing came from, shorter than its
+     entrance and easing in. fade-out is the reduced-motion exit: opacity
+     only, but still an animation, so animationend fires and unmounts. */
+  @keyframes backdrop-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes dialog-out {
+    to {
+      opacity: 0;
+      transform: translateY(12px) scale(0.97);
+    }
+  }
+  @keyframes toast-out {
+    to {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
   /* The undo toast, rising in from the bottom edge. */
   @keyframes toast-in {
     from {
@@ -381,5 +407,47 @@
 @keyframes vt-fade-in {
   from {
     opacity: 0;
+  }
+}
+
+/* Morph transitions (withViewTransition with { morph: true }): moderation
+   moves cards and rows, so the page itself only crossfades, with no rise.
+   A card that has no "after" (declined) shrinks away; one with no "before"
+   (restored) grows in. */
+:root[data-vt="morph"]::view-transition-new(root) {
+  animation: 180ms var(--ease-out) both vt-fade-in;
+}
+::view-transition-old(*):only-child {
+  animation: 180ms var(--ease-in) both vt-shrink-out;
+}
+::view-transition-new(*):only-child {
+  animation: 260ms var(--ease-out) both vt-grow-in;
+}
+/* Inside a morph the transition is the entrance, so a card's own mount
+   animation (e.g. a pending suggestion's) completes at once instead of
+   stacking a second fade. Duration 0, not "none": switching back to the
+   real duration afterwards doesn't replay a finished animation. */
+:root[data-vt="morph"] [data-morph] {
+  animation-duration: 0s;
+}
+@keyframes vt-shrink-out {
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+@keyframes vt-grow-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*):only-child,
+  ::view-transition-new(*):only-child {
+    animation-name: vt-fade-in;
+  }
+  ::view-transition-old(*):only-child {
+    animation-direction: reverse;
   }
 }

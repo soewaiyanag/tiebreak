@@ -2,6 +2,7 @@ import type { OptionPresentation } from "../../lib/tally";
 import type { BallotOption } from "../../lib/poll-options";
 import { Avatar } from "../ui/Avatar";
 import { SegmentedTally } from "./SegmentedTally";
+import { cn } from "../../lib/cn";
 
 interface LeaderCardProps {
   option: BallotOption;
@@ -10,12 +11,27 @@ interface LeaderCardProps {
   aheadBy: number;
   isTie: boolean;
   useSegmentedTally: boolean;
+  /** Names this card for the End voting view transition, so it morphs into the winner card. One per page. */
+  morph?: boolean;
 }
 
 /** guidance/brand-kit.md — the one tangerine moment on the live results screen. */
-export function LeaderCard({ option, tally, totalVotes, aheadBy, isTie, useSegmentedTally }: LeaderCardProps) {
+export function LeaderCard({
+  option,
+  tally,
+  totalVotes,
+  aheadBy,
+  isTie,
+  useSegmentedTally,
+  morph = false,
+}: LeaderCardProps) {
   return (
-    <div className="relative overflow-hidden rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-tangerine p-6">
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-tangerine p-6",
+        morph && "[view-transition-name:leader]",
+      )}
+    >
       {!isTie && totalVotes > 0 && (
         <span className="absolute right-[-2.75rem] top-4 w-40 rotate-45 bg-butter py-1 text-center font-display text-xs font-black uppercase tracking-[0.06em] text-cocoa">
           In the lead

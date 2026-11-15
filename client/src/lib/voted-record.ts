@@ -1,3 +1,5 @@
+import type { AvatarTint } from "@tiebreak/shared";
+
 /**
  * Local record of "this browser already voted on this poll, for these
  * options" — set right after a successful cast so a return visit shows the
@@ -10,6 +12,8 @@ const STORAGE_PREFIX = "tiebreak:voted:";
 export interface VotedRecord {
   optionIds: string[];
   voterName: string;
+  /** Missing on records saved before the post-vote slip showed your face. */
+  voterTint?: AvatarTint;
 }
 
 export function getVotedRecord(slug: string): VotedRecord | null {

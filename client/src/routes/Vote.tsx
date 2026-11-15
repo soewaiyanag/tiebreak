@@ -31,9 +31,7 @@ export function Vote() {
   useDocumentTitle(poll ? `${poll.title} · Tiebreak` : "Vote · Tiebreak");
   const [results, setResults] = useState<PollResults | null>(null);
   const [notFound, setNotFound] = useState(false);
-  const [votedRecord, setVotedRecordState] = useState<VotedRecord | null>(() =>
-    slug ? getVotedRecord(slug) : null,
-  );
+  const [votedRecord, setVotedRecordState] = useState<VotedRecord | null>(() => (slug ? getVotedRecord(slug) : null));
 
   const [name, setName] = useState(votedRecord?.voterName ?? "");
   const [tint, setTint] = useState<AvatarTint>(randomTint());
@@ -44,6 +42,8 @@ export function Vote() {
   const [submitting, setSubmitting] = useState(false);
   const [voteError, setVoteError] = useState<string>();
   const [errors, setErrors] = useState<Errors>({});
+  // Set only by a cast in this visit, so the slip-and-stamp moment plays once, never on a return visit.
+  const [justVoted, setJustVoted] = useState(false);
 
   const nameRef = useRef<HTMLInputElement>(null);
   const ballotRef = useRef<HTMLDivElement>(null);
@@ -99,9 +99,10 @@ export function Vote() {
         optionIds: selectedIds,
       });
       setResults(newResults);
-      const record: VotedRecord = { optionIds: selectedIds, voterName: name.trim() };
+      const record: VotedRecord = { optionIds: selectedIds, voterName: name.trim(), voterTint: tint };
       setVotedRecord(slug, record);
       setVotedRecordState(record);
+      setJustVoted(true);
       const labels = selectedIds.map((id) => poll.options.find((o) => o.id === id)?.label).join(" and ");
       announceStatus(`Vote cast for ${labels}`);
       setConfirmOpen(false);
@@ -161,6 +162,12 @@ export function Vote() {
             poll={poll}
             results={results}
             votedOptionLabels={votedOptionLabels ?? []}
+            you={{
+              name: votedRecord.voterName,
+              // Records from before the tint was saved fall back to the brand's default tint.
+              avatar: { seed: votedRecord.voterName, tint: votedRecord.voterTint ?? "cbe2d8" },
+            }}
+            justVoted={justVoted}
             onSuggestClick={() => setSuggestOpen(true)}
           />
         ) : (

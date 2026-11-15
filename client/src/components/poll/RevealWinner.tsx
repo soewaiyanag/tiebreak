@@ -22,7 +22,7 @@ export function RevealWinner({ presentation, options, winner, results, viewerOpt
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-tangerine p-8 text-center">
+      <div className="relative overflow-hidden rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-tangerine p-8 text-center [view-transition-name:leader]">
         <span className="absolute right-[-2.75rem] top-4 w-40 rotate-45 bg-butter py-1 text-center font-display text-xs font-black uppercase tracking-[0.06em] text-cocoa">
           Winner
         </span>

@@ -11,6 +11,7 @@ import { useToast } from "../hooks/useToast";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { presentTally } from "../lib/tally";
 import { NotFound } from "./NotFound";
+import { withViewTransition } from "../lib/view-transition";
 
 export function PollView() {
   const { id } = useParams<{ id: string }>();
@@ -19,9 +20,12 @@ export function PollView() {
   const showToast = useToast();
 
   const [poll, setPoll] = useState<PollDetail | null>(null);
+  const [morphedToSettled, setMorphedToSettled] = useState(false);
   const [notFound, setNotFound] = useState(false);
   useDocumentTitle(
-    poll ? `${poll.title}: ${poll.status === "settled" ? "settled" : "live results"} · Tiebreak` : "Loading poll · Tiebreak",
+    poll
+      ? `${poll.title}: ${poll.status === "settled" ? "settled" : "live results"} · Tiebreak`
+      : "Loading poll · Tiebreak",
   );
   const pollRef = useRef<PollDetail | null>(null);
   const lastAnnouncedTotal = useRef<number | null>(null);
@@ -33,7 +37,10 @@ export function PollView() {
 
   const refetch = useCallback(() => {
     if (!id) return;
-    void api.getPoll(id).then(setPoll).catch(() => setNotFound(true));
+    void api
+      .getPoll(id)
+      .then(setPoll)
+      .catch(() => setNotFound(true));
   }, [api, id]);
 
   useEffect(refetch, [refetch]);
@@ -100,18 +107,26 @@ export function PollView() {
     announceStatus("Result copied");
   }
 
+  // Live <-> settled swaps the whole body, so both directions run as a view
+  // transition: the title and status stay put and the leader card morphs
+  // into the winner card (and back). Fetch first, then swap in one commit.
   async function endVoting() {
     if (!poll) return;
     await api.settlePoll(poll.id);
+    const settled = await api.getPoll(poll.id);
+    withViewTransition(() => {
+      setPoll(settled);
+      setMorphedToSettled(true);
+    });
     announceStatus("Voting ended");
-    refetch();
   }
 
   async function reopen(closesAt: string) {
     if (!poll) return;
     await api.reopenPoll(poll.id, { closesAt });
+    const reopened = await api.getPoll(poll.id);
+    withViewTransition(() => setPoll(reopened));
     announceStatus("Voting reopened");
-    refetch();
   }
 
   if (notFound) return <NotFound />;
@@ -128,7 +143,12 @@ export function PollView() {
   return (
     <AppShell>
       {poll.status === "settled" ? (
-        <SettledPollBody poll={poll} onCopyResult={(text) => void copyResult(text)} onReopen={(c) => void reopen(c)} />
+        <SettledPollBody
+          poll={poll}
+          onCopyResult={(text) => void copyResult(text)}
+          onReopen={(c) => void reopen(c)}
+          morphingIn={morphedToSettled}
+        />
       ) : (
         <LivePollBody
           poll={poll}

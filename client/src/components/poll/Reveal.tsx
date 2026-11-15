@@ -12,13 +12,16 @@ interface RevealProps {
   results: PollResults;
   /** The option this viewer backed, if any — "You backed Veggie supreme" stays visible in every state. */
   viewerOptionId?: string | null;
+  /** True when a view transition is already bringing the reveal in (End voting): a second fade would fight the morph. */
+  morphingIn?: boolean;
 }
 
 /** Dispatches to the right reveal shape: nobody voted, a tie, or a clear winner. Design challenge 2. */
-export function Reveal({ pollId, options, results, viewerOptionId }: RevealProps) {
+export function Reveal({ pollId, options, results, viewerOptionId, morphingIn = false }: RevealProps) {
   const shouldAnimate = useShouldPlayReveal(pollId);
   const presentation = presentTally(results.tallies);
-  const entranceClass = shouldAnimate ? "animate-[reveal-in_0.6s_ease-out] motion-reduce:animate-none" : "";
+  const entranceClass =
+    shouldAnimate && !morphingIn ? "animate-[reveal-in_0.6s_ease-out] motion-reduce:animate-none" : "";
 
   if (presentation.totalVotes === 0) {
     return (

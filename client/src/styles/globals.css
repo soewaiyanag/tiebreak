@@ -18,6 +18,58 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Browser surfaces in the palette: butter highlight for selected text,
+     and autofill that keeps the card paper instead of Chrome's blue/yellow
+     (the transition delays its background change indefinitely). */
+  ::selection {
+    background: var(--color-butter);
+    color: var(--color-cocoa);
+  }
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-cocoa);
+    caret-color: var(--color-tangerine-deep);
+    transition: background-color 99999s ease-out 0s;
+  }
+
+  /* Tailwind's preflight resets buttons to the default arrow; anything
+     clickable gets the hand back. Disabled controls keep not-allowed. */
+  button:not(:disabled),
+  [role="button"],
+  label:has(input:not(:disabled)),
+  select,
+  summary {
+    cursor: pointer;
+  }
+
+  /* Route change: the new page rises 8px into place (entering: ease-out,
+     ~250ms). Reduced motion gets page-fade, opacity only. */
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+  @keyframes page-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* A picked chip getting inked in from where you tapped (ClosingTimePicker's
+     InkChip). --ink-x/--ink-y are set on pointerdown; keyboard picks fall
+     back to the center. 150% of the reference radius covers the chip even
+     from a corner. */
+  @keyframes ink-in {
+    from {
+      clip-path: circle(0 at var(--ink-x, 50%) var(--ink-y, 50%));
+    }
+    to {
+      clip-path: circle(150% at var(--ink-x, 50%) var(--ink-y, 50%));
+    }
+  }
+
   /* The reveal's one-time entrance (guidance/accessibility.md: renders instantly
      and completely without motion under prefers-reduced-motion — see the
      motion-reduce:animate-none pairing wherever this is used). */
@@ -32,15 +84,80 @@
     }
   }
 
-  /* A ballot option's checkmark, stamping in the instant it's selected. */
+  /* A label or check swapping in (an icon swap: scale 0.8 + blur, ~180ms ease-out). */
   @keyframes check-in {
     from {
       opacity: 0;
-      transform: scale(0.4);
+      transform: scale(0.8);
+      filter: blur(3px);
     }
     to {
       opacity: 1;
       transform: scale(1);
+    }
+  }
+
+  /* A face or tick popping into place: an entrance from 0.8, never from 0. */
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+      filter: blur(2px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  /* The ballot slip sliding up out of the ballot box... */
+  @keyframes slip-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  /* ...the rubber stamp coming down hard and landing crooked... */
+  @keyframes stamp-slam {
+    0% {
+      opacity: 0;
+      transform: scale(2.4) rotate(-18deg);
+    }
+    70% {
+      opacity: 1;
+      transform: scale(0.94) rotate(-7deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(-8deg);
+    }
+  }
+  /* ...and the slip jolting under the impact. */
+  @keyframes thud {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    35% {
+      transform: translateY(3px);
+    }
+  }
+  /* Your avatar dropping onto the front of the crew stack. */
+  @keyframes drop-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-28px) scale(0.8);
+    }
+    60% {
+      opacity: 1;
+      transform: translateY(3px) scale(1.05);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 
@@ -79,18 +196,22 @@
 
 /* The game piece: anything you can press sits on a cocoa base edge
    (--edge). Hover lifts it so the edge thickens, press sinks it flat, and
-   release springs back past rest and settles. The base stays planted
-   throughout because transform and shadow move by the same amount.
+   release eases back up. The base stays planted
+   throughout because transform and shadow move by the same amount. No
+   overshoot: buttons are pressed all day, and bounce on everyday UI reads
+   as lag. The flourishes are saved for rare moments.
    [data-down="true"] holds a piece pushed in: a picked option, the active
    tab, the chosen swatch. */
 @layer components {
   .piece {
     --edge: var(--edge-piece);
     --inset: 0 0 0 transparent; /* filled buttons add their pressed-plastic inset */
-    box-shadow: var(--inset), 0 var(--edge) 0 var(--color-cocoa);
+    box-shadow:
+      var(--inset),
+      0 var(--edge) 0 var(--color-cocoa);
     transition:
-      transform 220ms var(--ease-spring),
-      box-shadow 220ms var(--ease-spring),
+      transform 160ms var(--ease-out),
+      box-shadow 160ms var(--ease-out),
       background-color 150ms ease-out,
       border-color 150ms ease-out,
       color 150ms ease-out;
@@ -102,15 +223,19 @@
   @media (hover: hover) {
     .piece:hover:not(:disabled, [data-disabled="true"], [data-down="true"]) {
       transform: translateY(-2px);
-      box-shadow: var(--inset), 0 calc(var(--edge) + 2px) 0 var(--color-cocoa);
+      box-shadow:
+        var(--inset),
+        0 calc(var(--edge) + 2px) 0 var(--color-cocoa);
     }
   }
 
   .piece:active:not(:disabled, [data-disabled="true"]),
   .piece[data-down="true"] {
     transform: translateY(var(--edge));
-    box-shadow: var(--inset), 0 0 0 var(--color-cocoa);
-    transition-duration: 70ms; /* sinking is instant; only the release springs */
+    box-shadow:
+      var(--inset),
+      0 0 0 var(--color-cocoa);
+    transition-duration: 100ms; /* press feedback lands inside 100ms */
   }
 
   /* Unavailable pieces lie flat on the table: no edge to press. */
@@ -217,4 +342,44 @@
   --container-content: 50rem;
   --container-form: 40rem;
   --container-page: 72.5rem;
+}
+
+/* Same-page view transitions (lib/view-transition.ts), e.g. End voting:
+   elements with a matching view-transition-name (the title, the status
+   sticker, the leader card becoming the winner card) move as one object,
+   ease-in-out (one object moving from A to B). Everything else crossfades with
+   the exit shorter than the entrance and overlapping it. */
+::view-transition-group(*) {
+  animation-duration: 340ms;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+}
+::view-transition-old(root) {
+  animation: 160ms cubic-bezier(0.7, 0, 0.84, 1) both vt-out;
+}
+::view-transition-new(root) {
+  animation: 260ms var(--ease-out) 60ms both vt-in;
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*) {
+    animation: none;
+  }
+  ::view-transition-new(root) {
+    animation-name: vt-fade-in;
+  }
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
 }

@@ -1,4 +1,5 @@
 import type { RefObject } from "react";
+import { createPortal } from "react-dom";
 import type { AvatarTint, PublicPoll } from "@tiebreak/shared";
 import { StatusSticker } from "./StatusSticker";
 import { Button } from "../ui/Button";
@@ -73,22 +74,22 @@ export function VoteBallotView({
       </div>
 
       {poll.suggestionsEnabled && (
-        <button
-          type="button"
-          onClick={onSuggestClick}
-          className={linkButtonClasses("mt-4")}
-        >
+        <button type="button" onClick={onSuggestClick} className={linkButtonClasses("mt-4")}>
           Suggest something else
         </button>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 border-t-[length:var(--border-divider)] border-dashed border-cream-deep bg-cream-deep/95 p-4 backdrop-blur">
-        <div className="mx-auto max-w-content">
-          <Button variant="primary" className="w-full" onClick={onCastClick} disabled={!canCast}>
-            {canCast ? `Cast my vote for ${selectedLabels}` : "Cast my vote"}
-          </Button>
-        </div>
-      </div>
+      {/* Portaled to <body>: a transformed ancestor (the route transition) would otherwise pin "fixed" to it. */}
+      {createPortal(
+        <div className="fixed inset-x-0 bottom-0 border-t-[length:var(--border-divider)] border-dashed border-cream-deep bg-cream-deep/95 p-4 backdrop-blur">
+          <div className="mx-auto max-w-content">
+            <Button variant="primary" className="w-full" onClick={onCastClick} disabled={!canCast}>
+              {canCast ? `Cast my vote for ${selectedLabels}` : "Cast my vote"}
+            </Button>
+          </div>
+        </div>,
+        document.body,
+      )}
     </>
   );
 }

@@ -18,7 +18,7 @@ export function RevealTie({ presentation, winners, results, viewerOptionId }: Re
 
   return (
     <div className="space-y-3">
-      <div className="rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-butter p-6 text-center">
+      <div className="rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-butter p-6 text-center [view-transition-name:leader]">
         <p className="font-display text-lg font-black text-cocoa">It's a Tiebreak</p>
         <p className="mt-1 font-body text-base font-bold text-cocoa">Tied at {tiedVotes} votes each</p>
       </div>

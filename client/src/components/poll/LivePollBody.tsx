@@ -38,9 +38,15 @@ export function LivePollBody({
 
   return (
     <>
-      <StatusSticker state="open" closesAt={poll.closesAt} />
+      <span className="inline-block [view-transition-name:poll-status]">
+        <StatusSticker state="open" closesAt={poll.closesAt} />
+      </span>
 
-      <h1 ref={headingRef} tabIndex={-1} className="mt-3 text-balance font-display text-2xl font-black text-cocoa">
+      <h1
+        ref={headingRef}
+        tabIndex={-1}
+        className="mt-3 text-balance font-display text-2xl font-black text-cocoa [view-transition-name:poll-title]"
+      >
         {poll.title}
       </h1>
 
@@ -56,13 +62,14 @@ export function LivePollBody({
         ) : presentation.isTie ? (
           <>
             <p className="font-body text-sm font-bold text-cocoa">
-              Tied at {presentation.options.find((t) => t.optionId === leaderOptions[0]?.id)?.votes} votes each —
-              still anyone's game
+              Tied at {presentation.options.find((t) => t.optionId === leaderOptions[0]?.id)?.votes} votes each — still
+              anyone's game
             </p>
             <div className="space-y-3">
-              {leaderOptions.map((option) => (
+              {leaderOptions.map((option, i) => (
                 <LeaderCard
                   key={option.id}
+                  morph={i === 0}
                   option={option}
                   tally={presentation.options.find((t) => t.optionId === option.id)!}
                   totalVotes={presentation.totalVotes}
@@ -82,6 +89,7 @@ export function LivePollBody({
               aheadBy={presentation.aheadBy}
               isTie={false}
               useSegmentedTally={presentation.useSegmentedTally}
+              morph
             />
           )
         )}

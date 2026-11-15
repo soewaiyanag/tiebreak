@@ -106,12 +106,15 @@
 
   /* Game-piece thickness: interactive things are tokens on the table, with a
      cocoa base edge under them. Hover lifts the piece, press sinks it flat,
-     release springs it back (see .piece in globals.css). Static cards and
+     release eases it back (see .piece in globals.css). Static cards and
      pills stay flat, so "has an edge" reads as "you can press this". */
   --edge-piece: 4px;       /* filled buttons, clickable cards */
   --edge-chip: 3px;        /* secondary buttons, ballot options, swatches */
+  /* Motion: ease-out for things arriving, ease-in for leaving,
+     ease-in-out for one object moving A to B. Overshoot only for rare moments. */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* the plastic springing back — release only */
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* Focus — 3px teal ring, offset 2px, on everything interactive */
   --focus-ring: 3px solid var(--color-teal);

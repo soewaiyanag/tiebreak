@@ -64,7 +64,9 @@ export function Dashboard() {
 
   if (polls.length === 0) return <FirstRunEmptyState />;
 
-  const openPolls = polls.filter((p) => p.status === "open").sort((a, b) => new Date(a.closesAt).getTime() - new Date(b.closesAt).getTime());
+  const openPolls = polls
+    .filter((p) => p.status === "open")
+    .sort((a, b) => new Date(a.closesAt).getTime() - new Date(b.closesAt).getTime());
   const closedPolls = polls.filter((p) => p.status === "settled");
   const [featured, ...rest] = tab === "open" ? openPolls : [];
   const shownList = tab === "open" ? rest : closedPolls;
@@ -77,7 +79,7 @@ export function Dashboard() {
       <div className="relative mt-5 inline-grid grid-cols-2 rounded-full border-2 border-cocoa bg-cream-deep p-1">
         <span
           aria-hidden="true"
-          className={`absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full border-2 border-cocoa bg-card transition-transform duration-300 ease-[var(--ease-spring)] motion-reduce:transition-none ${
+          className={`absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full border-2 border-cocoa bg-card transition-transform duration-200 ease-[var(--ease-in-out)] motion-reduce:transition-none ${
             tab === "closed" ? "translate-x-full" : ""
           }`}
         />

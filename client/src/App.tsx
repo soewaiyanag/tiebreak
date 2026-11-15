@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router";
+import { RouteTransition } from "./components/layout/RouteTransition";
 import { SessionProvider } from "./lib/session";
 import { RequireAuth } from "./components/layout/RequireAuth";
 import { AnnouncerProvider } from "./components/ui/AnnouncerProvider";
@@ -20,46 +21,48 @@ export default function App() {
       <AnnouncerProvider>
         <ToastProvider>
           <SessionProvider>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/guest" element={<Guest />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route
-                path="/app"
-                element={
-                  <RequireAuth>
-                    <Dashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/app/new"
-                element={
-                  <RequireAuth>
-                    <PollCreate />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/app/polls/:id/share"
-                element={
-                  <RequireAuth>
-                    <PollShare />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/app/polls/:id"
-                element={
-                  <RequireAuth>
-                    <PollView />
-                  </RequireAuth>
-                }
-              />
-              <Route path="/p/:slug" element={<Vote />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <RouteTransition>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/guest" element={<Guest />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route
+                  path="/app"
+                  element={
+                    <RequireAuth>
+                      <Dashboard />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/new"
+                  element={
+                    <RequireAuth>
+                      <PollCreate />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/polls/:id/share"
+                  element={
+                    <RequireAuth>
+                      <PollShare />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/app/polls/:id"
+                  element={
+                    <RequireAuth>
+                      <PollView />
+                    </RequireAuth>
+                  }
+                />
+                <Route path="/p/:slug" element={<Vote />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </RouteTransition>
           </SessionProvider>
         </ToastProvider>
       </AnnouncerProvider>

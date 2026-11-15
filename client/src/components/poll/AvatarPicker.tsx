@@ -25,7 +25,14 @@ export const AvatarPicker = forwardRef<HTMLInputElement, AvatarPickerProps>(func
 ) {
   return (
     <div className="flex items-start gap-4">
-      <Avatar avatar={{ seed: name || "you", tint }} size={50} alt="" />
+      {/* Keyed on the tint so picking a color pops the face back in wearing it. */}
+      <Avatar
+        key={tint}
+        avatar={{ seed: name || "you", tint }}
+        size={50}
+        alt=""
+        className="animate-[pop_0.2s_var(--ease-out)] motion-reduce:animate-none"
+      />
       <div className="flex-1 space-y-3">
         <FormField label="Your name" error={nameError}>
           {(props) => (
@@ -58,8 +65,21 @@ export const AvatarPicker = forwardRef<HTMLInputElement, AvatarPickerProps>(func
                 )}
               >
                 {tint === t && (
-                  <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true" className="animate-[check-in_0.25s_var(--ease-spring)] motion-reduce:animate-none">
-                    <path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                    className="animate-[check-in_0.18s_var(--ease-out)] motion-reduce:animate-none"
+                  >
+                    <path
+                      d="M4 10.5l4 4 8-9"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 )}
               </button>

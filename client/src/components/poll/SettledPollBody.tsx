@@ -13,10 +13,12 @@ interface SettledPollBodyProps {
   poll: PollDetail;
   onCopyResult: (text: string) => void;
   onReopen: (closesAt: string) => void;
+  /** Set when End voting morphed the live view into this one; see Reveal. */
+  morphingIn?: boolean;
 }
 
 /** The reveal, plus the creator-only controls that sit below it: Copy result and Reopen voting. */
-export function SettledPollBody({ poll, onCopyResult, onReopen }: SettledPollBodyProps) {
+export function SettledPollBody({ poll, onCopyResult, onReopen, morphingIn = false }: SettledPollBodyProps) {
   const [reopenOpen, setReopenOpen] = useState(false);
   const options = ballotOf(poll);
   const presentation = presentTally(poll.results.tallies);
@@ -38,11 +40,15 @@ export function SettledPollBody({ poll, onCopyResult, onReopen }: SettledPollBod
 
   return (
     <>
-      <StatusSticker state="settled" />
-      <h1 className="mt-3 text-balance font-display text-2xl font-black text-cocoa">{poll.title}</h1>
+      <span className="inline-block [view-transition-name:poll-status]">
+        <StatusSticker state="settled" />
+      </span>
+      <h1 className="mt-3 text-balance font-display text-2xl font-black text-cocoa [view-transition-name:poll-title]">
+        {poll.title}
+      </h1>
 
       <div className="mt-6">
-        <Reveal pollId={poll.id} options={options} results={poll.results} />
+        <Reveal pollId={poll.id} options={options} results={poll.results} morphingIn={morphingIn} />
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">

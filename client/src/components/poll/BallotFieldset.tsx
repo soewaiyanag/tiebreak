@@ -29,7 +29,7 @@ export function BallotFieldset({ options, type, maxChoices, selectedIds, onToggl
               data-down={selected}
               data-disabled={disabled}
               className={cn(
-                "piece piece-chip flex cursor-pointer items-center gap-3 rounded-[length:var(--radius-md)] border-2 border-cocoa bg-card px-4 py-3.5",
+                "piece piece-chip flex cursor-pointer items-center gap-3 rounded-[length:var(--radius-md)] border-2 border-cocoa bg-card px-4 py-3.5 has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-teal has-[:focus-visible]:ring-offset-2",
                 !selected && !disabled && "hover:bg-cream-deep/50",
                 selected && "border-tangerine-deep bg-cream-deep",
                 disabled && "cursor-not-allowed opacity-50",
@@ -41,8 +41,35 @@ export function BallotFieldset({ options, type, maxChoices, selectedIds, onToggl
                 checked={selected}
                 disabled={disabled}
                 onChange={() => onToggle(option.id)}
-                className="h-5 w-5 shrink-0 accent-tangerine-deep focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal focus-visible:ring-offset-2"
+                className="sr-only"
               />
+              {/* The drawn stand-in for the visually hidden input above: a ring that fills and pops a check. */}
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "flex h-6 w-6 shrink-0 items-center justify-center border-2 border-cocoa transition-colors duration-150",
+                  type === "single" ? "rounded-full" : "rounded-[0.375rem]",
+                  selected ? "border-tangerine-deep bg-tangerine-deep text-cream-bright" : "bg-cream",
+                )}
+              >
+                {selected && (
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 20 20"
+                    className="animate-[pop_0.18s_var(--ease-out)] motion-reduce:animate-none"
+                  >
+                    <path
+                      d="M4 10.5l4 4 8-9"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+              </span>
               <span className="min-w-0 flex-1">
                 <span className="block font-body text-md font-extrabold text-cocoa">{option.label}</span>
                 {option.suggestedBy && (
@@ -52,24 +79,6 @@ export function BallotFieldset({ options, type, maxChoices, selectedIds, onToggl
                   </span>
                 )}
               </span>
-              {selected && (
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
-                  className="shrink-0 animate-[check-in_0.25s_var(--ease-spring)] text-tangerine-deep motion-reduce:animate-none"
-                >
-                  <path
-                    d="M4 10.5l4 4 8-9"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
             </label>
           );
         })}

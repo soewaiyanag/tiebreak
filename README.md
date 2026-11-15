@@ -22,12 +22,14 @@ The frontend came together fast. The backend is where the actual product logic l
 
 ## Roadmap
 
-In progress on the `backend/nestjs-mongo` branch: a new backend in **NestJS +
-MongoDB**, ported endpoint by endpoint against the same API contract the client
-already uses, then **Sudden Death** (a tied poll spawns a short revote between
-only the tied options). `main` stays on the current Express + PostgreSQL API
-until the new one reaches parity. Checklist and decisions: `PROGRESS.md` on
-that branch.
+In progress on the `backend/nestjs-mongo` branch: a realtime backend rebuilt in
+**NestJS + MongoDB**, with **Socket.IO** for live results, **BullMQ on Redis**
+to close polls at their deadline, **Google sign-in**, and **Testcontainers**
+tests, shipped as a **Docker** image on **Fly.io**. It's ported endpoint by
+endpoint against the contract the client already uses, then gains **Sudden
+Death** (a tied poll spawns a short revote between only the tied options).
+`main` stays on the current Express + PostgreSQL API until the new one reaches
+parity. Checklist and decisions: `PROGRESS.md` on that branch.
 
 ## Running locally
 

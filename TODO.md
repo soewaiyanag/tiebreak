@@ -9,22 +9,17 @@ built (Sudden Death, Share Card), a couple of stretch features, and deploying
 it live. Everything in Phases 0–5 below is implemented; kept as a record of
 what was built and why, and as the map for the optional work that remains.
 
-## Division of labor
+## Build order
 
-**2026-09-17 — the frontend became fully Claude-owned.** Every page was
-built against `shared/src/types.ts`'s contract, calling real API routes via
+**2026-09-17 — frontend first.** Every page was built against
+`shared/src/types.ts`'s contract, calling real API routes via
 `client/src/lib/api/remote.ts`. `guestApi` (`client/src/lib/api/guest.ts`) is
 a full client-side simulation of the same rules — demo-only, never the
 contract itself — which is how the frontend got built and verified before
 any backend route existed.
 
-**2026-09-24 — the backend became Claude-owned too.** The original plan (see
-history below) had the user learning the backend hands-on, teaching-zone
-style. That changed: "I would like to learn with another project but for
-this project I would like to learn by reading what you implemented and how
-you implemented so also build the backend completely until the project is
-functional." So `server/` is now fully built — see "What got built" below.
-Their hands-on backend learning continues on a separate project instead.
+**2026-09-24 — then the backend.** `server/` is now fully built — see "What
+got built" below.
 
 ## What got built (server/)
 
@@ -129,8 +124,8 @@ per-instance (fix would be Postgres LISTEN/NOTIFY).
 
 Chosen over a full redesign: keep the cream/cocoa/tangerine world, Gabarito +
 Karla, the checked contrast pairs and the honest-results rules; push them
-bolder and add motion. New split from today: Claude builds the frontend, the
-user writes the backend.
+bolder and add motion. From here on the backend is written hands-on, step by
+step (see `PROGRESS.md`).
 
 - [x] **1. Tactile controls** — `.piece` in `globals.css`: anything pressable
       sits on a cocoa base edge (`--edge-piece` 4px / `--edge-chip` 3px), lifts
@@ -145,7 +140,52 @@ user writes the backend.
       slightly tilted sticker with a drawn icon that counts down inside the
       last day ("Closes in 2h 14m", `formatCountdown` + `useNow`), else shows
       the closing time; "Settled" with a check. `Pill` restyled to match.
-- [ ] **2. The vote moment** — pick, stamp, join the crew
+- [x] **2. The vote moment** — ballot options get a drawn radio/checkbox
+      (the real input is visually hidden; the focus ring moves to the row via
+      `has-[:focus-visible]`) that fills tangerine and pops a check. The avatar
+      preview pops when a color is picked. After casting: `BallotSlip` ("Priya
+      backed Heat — Locked in. No takebacks.") slides up, a teal "Counted"
+      rubber stamp slams onto it, the slip thuds, and your avatar drops onto
+      the front of `VoterCrewStack` ("You and 7 others voted"). Plays once per
+      cast (`justVoted`); a return visit shows it all at rest. The voted record
+      now stores the tint so your face matches on return.
+- [x] **2b. Transitions + motion retune** (page transitions, pointer
+      cursors, one set of motion rules from now on). Route changes:
+      `RouteTransition` remounts on path change with a 260ms ease-out rise
+      (opacity-only under reduced motion), skipped on first load (location
+      key "default"); the vote dock is portaled to `<body>` so the transform
+      can't pin it. End voting / Reopen: `withViewTransition` (View
+      Transitions API + flushSync) morphs the title, status sticker and
+      leader card into the winner card, 340ms ease-in-out; the reveal's own
+      fade is skipped when it arrives by morph. Pointer cursor on every
+      enabled button/label. Motion retune: no overshoot on everyday UI
+      (pieces ease back in 160ms, press lands in 100ms), checks and faces pop
+      from 0.8 + blur (never from 0), tab thumb 200ms ease-in-out; the slip,
+      stamp and crew drop keep their flourish (rare moment).
+- [x] **2c. Closing-time picker** (user asked: no system date/time UI).
+      `ClosingTimePicker` replaces `<input type="datetime-local">` on Create
+      and in the Reopen modal, same `"YYYY-MM-DDTHH:mm"` value so validation
+      is untouched: quick picks (In an hour / In 3 hours / Tonight, 8 PM while
+      before 7 PM / Tomorrow, noon, rounded up to a quarter hour), a 14-day
+      strip, Morning/Afternoon/Evening hour chips (6 AM–11 PM), minute chips,
+      past times lie flat, and a preview of the exact sticker voters will
+      see. Helpers in `lib/closing-time.ts`. Modals now scroll when taller
+      than the screen. Picking felt flat, so every chip is an `InkChip`:
+      cocoa ink floods it from the tap point (clip-path circle wipe, 240ms
+      ease-out; keyboard picks ink from the center) and the text flips to
+      cream under the ink's edge via a clipped second copy of the content.
+- [x] **2d. Premium forms + auth** (user: "I don't like default outline").
+      `INPUT_CLASSES`: 2px cocoa-soft outline, 52px tall, 16px text (no iOS
+      zoom), tangerine caret; focus drops the teal ring and raises the field
+      onto a 3px cocoa base edge (box-shadow, no layout shift). Butter text
+      selection; autofill keeps the card paper. `PasswordInput` (show/hide),
+      `Switch` (role="switch", knob 200ms ease-in-out), `InkChip` moved to
+      `components/ui`. Login/Signup on `AuthLayout`: butter-offset heading
+      + subtitle, and on lg a lamplit cocoa panel with a tilted live poll
+      built from the real LeaderCard/StatusSticker; Login links the demo.
+      Create form: heading aligned to the form, "Just one / More than one"
+      ink chips with an up-to stepper (clamped to the option count on
+      submit), suggestions as a switch with a hint.
 - [ ] **3. Live results motion** — bars slide and re-sort, ticks stamp in
 - [ ] **4. The reveal** — drumroll → winner, tie state
 - [ ] **5. Landing + dashboard** — show a live poll, fill the empty space

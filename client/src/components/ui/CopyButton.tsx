@@ -13,7 +13,13 @@ interface CopyButtonProps {
 const COPIED_DURATION_MS = 2000;
 
 /** Copy link / Copy result — pulses and swaps its label to confirm the copy landed, then reverts. */
-export function CopyButton({ onCopy, label, copiedLabel = "Copied!", variant = "primary", className }: CopyButtonProps) {
+export function CopyButton({
+  onCopy,
+  label,
+  copiedLabel = "Copied!",
+  variant = "primary",
+  className,
+}: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
   async function handleClick() {

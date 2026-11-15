@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import { SkipLink } from "../components/layout/SkipLink";
-import { Logo } from "../components/layout/Logo";
+import { AuthLayout } from "../components/layout/AuthLayout";
+import { PasswordInput } from "../components/ui/PasswordInput";
 import { Button } from "../components/ui/Button";
 import { FormField } from "../components/ui/FormField";
 import { INPUT_CLASSES } from "../components/ui/input-classes";
 import { authClient } from "../lib/auth-client";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { linkButtonClasses } from "../components/ui/link-button-classes";
 
 export function Login() {
   useDocumentTitle("Log in · Tiebreak");
@@ -36,53 +37,53 @@ export function Login() {
   }
 
   return (
-    <>
-      <SkipLink />
-      <header className="px-4 py-6">
-        <Link to="/" className="inline-block transition-transform duration-150 hover:scale-105 active:scale-95 motion-reduce:transition-none motion-reduce:hover:scale-100">
-          <Logo />
-        </Link>
-      </header>
-      <main id="main" className="mx-auto max-w-form px-4 py-10">
-        <h1 className="font-display text-xl font-extrabold text-cocoa">Log in</h1>
-        <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
-          <FormField label="Email">
-            {(props) => (
-              <input
-                {...props}
-                type="email"
-                required
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={INPUT_CLASSES}
-              />
-            )}
-          </FormField>
-          <FormField label="Password" error={error}>
-            {(props) => (
-              <input
-                {...props}
-                type="password"
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={INPUT_CLASSES}
-              />
-            )}
-          </FormField>
-          <Button type="submit" variant="primary" disabled={submitting} className="w-full">
-            {submitting ? "Logging in…" : "Log in"}
-          </Button>
-        </form>
-        <p className="mt-6 font-body text-sm text-cocoa-soft">
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Your polls, your crew, right where you left them."
+      footer={
+        <>
           New to Tiebreak?{" "}
-          <Link to="/signup" className="font-bold text-teal-deep hover:underline">
+          <Link to="/signup" className={linkButtonClasses()}>
             Create an account
           </Link>
-        </p>
-      </main>
-    </>
+          <span className="mt-2 block">
+            Just looking?{" "}
+            <Link to="/guest" className={linkButtonClasses()}>
+              Try the demo
+            </Link>
+          </span>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        <FormField label="Email">
+          {(props) => (
+            <input
+              {...props}
+              type="email"
+              required
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={INPUT_CLASSES}
+            />
+          )}
+        </FormField>
+        <FormField label="Password" error={error}>
+          {(props) => (
+            <PasswordInput
+              {...props}
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          )}
+        </FormField>
+        <Button type="submit" variant="primary" disabled={submitting} className="!mt-8 w-full py-3.5">
+          {submitting ? "Logging in…" : "Log in"}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

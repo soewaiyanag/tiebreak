@@ -19,7 +19,7 @@ export function BallotSlip({ voter, optionLabels, justCast }: BallotSlipProps) {
     <div className={cn("relative", justCast && "animate-[slip-in_0.4s_var(--ease-out)] motion-reduce:animate-none")}>
       <div
         className={cn(
-          "flex items-center gap-4 rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-card py-5 pl-5 pr-28",
+          "flex items-center gap-4 rounded-[length:var(--radius-lg)] border-[length:var(--border-card)] border-cocoa bg-card px-5 pb-5 pt-8 sm:py-5 sm:pr-36",
           justCast && "animate-[thud_0.25s_ease-out_0.55s] motion-reduce:animate-none",
         )}
       >
@@ -34,7 +34,8 @@ export function BallotSlip({ voter, optionLabels, justCast }: BallotSlipProps) {
       <span
         aria-hidden="true"
         className={cn(
-          "absolute right-4 top-1/2 -mt-5 rotate-[-8deg] rounded-[length:var(--radius-md)] border-[3px] border-teal bg-card px-3 py-1 font-display text-xl font-black text-teal shadow-[inset_0_0_0_2px_var(--color-card),inset_0_0_0_4px_var(--color-teal)]",
+          // Narrow screens: the stamp lands on the slip's top edge so long option names never sit under it.
+          "absolute -top-5 right-3 rotate-[-8deg] sm:right-4 sm:top-1/2 sm:-mt-5 rounded-[length:var(--radius-md)] border-[3px] border-teal bg-card px-3 py-1 font-display text-xl font-black text-teal shadow-[inset_0_0_0_2px_var(--color-card),inset_0_0_0_4px_var(--color-teal)]",
           justCast && "animate-[stamp-slam_0.4s_var(--ease-out)_0.3s_both] motion-reduce:animate-none",
         )}
       >

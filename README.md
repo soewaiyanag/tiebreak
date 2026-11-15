@@ -18,7 +18,16 @@ React 19 · TypeScript · React Router · Tailwind CSS — Express 5 · Drizzle 
 
 ## Why it's split this way
 
-The frontend came together fast with AI help. The backend is where the actual product logic lives: the poll state machine and the "honest results" rule (never leaking pending suggestions to voters, deriving vote counts from votes instead of storing a running tally) are enforced server-side, not just in the UI — a creator dashboard can't fake a result the database doesn't back.
+The frontend came together fast. The backend is where the actual product logic lives: the poll state machine and the "honest results" rule (never leaking pending suggestions to voters, deriving vote counts from votes instead of storing a running tally) are enforced server-side, not just in the UI — a creator dashboard can't fake a result the database doesn't back.
+
+## Roadmap
+
+In progress on the `backend/nestjs-mongo` branch: a new backend in **NestJS +
+MongoDB**, ported endpoint by endpoint against the same API contract the client
+already uses, then **Sudden Death** (a tied poll spawns a short revote between
+only the tied options). `main` stays on the current Express + PostgreSQL API
+until the new one reaches parity. Checklist and decisions: `PROGRESS.md` on
+that branch.
 
 ## Running locally
 

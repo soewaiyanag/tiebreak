@@ -279,6 +279,39 @@
     }
   }
 
+  /* The logo drawing itself once (landing page): the two bars of a tie,
+     then the slash that breaks it, and the tile takes the hit. */
+  .logo-animated .logo-stroke {
+    stroke-dasharray: 1;
+    animation: logo-draw 0.3s var(--ease-out) both;
+  }
+  .logo-animated .logo-face {
+    animation: logo-thud 0.22s ease-out 0.82s both;
+  }
+  @keyframes logo-draw {
+    from {
+      stroke-dashoffset: 1;
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes logo-thud {
+    40% {
+      translate: 0 1.5px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .logo-animated .logo-stroke,
+    .logo-animated .logo-face {
+      animation: none;
+    }
+  }
+
   /* A swatch shaking its head as you hover past: "pick me". */
   @keyframes wiggle {
     0%,

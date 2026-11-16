@@ -21,7 +21,7 @@ export function Landing() {
     <>
       <SkipLink />
       <header className="mx-auto flex max-w-page items-center justify-between px-4 py-6">
-        <Logo />
+        <Logo animated />
         <nav className="flex items-center gap-3">
           {STANDALONE ? (
             <Link to="/guest" className={buttonClasses("primary")}>

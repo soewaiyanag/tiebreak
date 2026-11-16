@@ -135,6 +135,12 @@
       transform: scale(1) rotate(-8deg);
     }
   }
+  /* A pack bar filling out from the left to its share (the landing page's results moment). */
+  @keyframes pack-fill {
+    from {
+      transform: scaleX(0);
+    }
+  }
   /* ...and the slip jolting under the impact. */
   @keyframes thud {
     0%,

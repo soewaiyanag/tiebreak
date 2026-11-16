@@ -4,6 +4,16 @@ A group polling app — create a poll, share a link, the group votes, ties get s
 
 **Live:** https://tiebreak-soewaiyanag.vercel.app
 
+## Screenshots
+
+**Landing page.** The vote page on the right is playable: pick, cast, watch the stamp land.
+
+![Tiebreak landing page: "Stop the group chat going in circles." beside a playable Pizza night ballot](docs/screenshots/landing.png)
+
+**The vote page, on a phone.** What everyone in the chat opens from the link: a name, a face, one pick, one button.
+
+<img src="docs/screenshots/vote.png" alt="Tiebreak vote page on a phone: name and avatar, four pizza options with Detroit-style picked, and a Cast my vote button" width="360">
+
 ## Status
 
 - **Frontend** (`client/`) — built: poll creation, a share flow, live results, a creator dashboard behind login, and a guest mode that runs the whole product against a local in-browser simulation so it's demoable with zero setup.

@@ -44,8 +44,13 @@ export function VoteBallotView({
 
   return (
     <>
-      <StatusSticker state="open" closesAt={poll.closesAt} />
-      <h1 className="mt-3 text-balance font-display text-2xl font-black text-cocoa">{poll.title}</h1>
+      {/* Named for the vote view transition: the sticker and title stay put while the page below swaps. */}
+      <span className="inline-block [view-transition-name:poll-status]">
+        <StatusSticker state="open" closesAt={poll.closesAt} />
+      </span>
+      <h1 className="mt-3 text-balance font-display text-2xl font-black text-cocoa [view-transition-name:poll-title]">
+        {poll.title}
+      </h1>
 
       <div className="mt-6">
         <AvatarPicker

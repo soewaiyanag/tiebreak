@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PublicOption } from "@tiebreak/shared";
 import { BallotFieldset } from "../poll/BallotFieldset";
 import { BallotSlip } from "../poll/BallotSlip";
@@ -36,6 +36,7 @@ export function LandingDemo() {
   const ballotRef = useRef<HTMLDivElement>(null);
 
   const picked = DEMO_OPTIONS.find((o) => o.id === pickedId);
+  const currentLabel = picked ? castLabel(picked) : PICK_PROMPT;
 
   function castVote() {
     setCastId(pickedId);
@@ -46,8 +47,9 @@ export function LandingDemo() {
   function reset() {
     setCastId(null);
     setPickedId(null);
-    // The "Vote again" button is about to hide; put focus back at the top of the ballot.
-    requestAnimationFrame(() => ballotRef.current?.querySelector("input")?.focus());
+    // The "Vote again" button is about to hide; put focus back at the top of the ballot,
+    // without scrolling the page to it.
+    requestAnimationFrame(() => ballotRef.current?.querySelector("input")?.focus({ preventScroll: true }));
   }
 
   return (
@@ -62,7 +64,14 @@ export function LandingDemo() {
         </h2>
 
         <div className="mt-5 grid">
-          <div ref={ballotRef} className={cn("[grid-area:1/1]", castId && "invisible")}>
+          {/* Ballot out (fast, ease-in), result in (rising, ease-out): the vote page's view-transition timing. */}
+          <div
+            ref={ballotRef}
+            className={cn(
+              "transition-[opacity,visibility] duration-150 ease-in [grid-area:1/1] motion-reduce:transition-none",
+              castId && "invisible opacity-0",
+            )}
+          >
             <BallotFieldset
               options={DEMO_OPTIONS}
               type="single"
@@ -76,7 +85,7 @@ export function LandingDemo() {
                 {[PICK_PROMPT, ...DEMO_OPTIONS.map(castLabel)].map((label) => (
                   <span
                     key={label}
-                    className={cn("[grid-area:1/1]", label !== (picked ? castLabel(picked) : PICK_PROMPT) && "invisible")}
+                    className={cn("[grid-area:1/1]", label !== currentLabel && "invisible")}
                   >
                     {label}
                   </span>
@@ -104,11 +113,29 @@ function CastResult({ option, shown, onVoteAgain }: { option: PublicOption; show
   const results = demoResults("open", option.id);
   const presentation = presentTally(results.tallies);
   const leader = DEMO_OPTIONS.find((o) => o.id === presentation.leaders[0])!;
+  const voteAgainRef = useRef<HTMLButtonElement>(null);
+
+  // Keyboard users land on "Vote again" once the ballot hides. preventScroll: moving focus must never move the page.
+  useEffect(() => {
+    if (shown) voteAgainRef.current?.focus({ preventScroll: true });
+  }, [shown]);
 
   return (
-    <div className={cn("space-y-4 [grid-area:1/1]", !shown && "invisible")}>
+    <div
+      className={cn(
+        "space-y-4 [grid-area:1/1]",
+        shown
+          ? "animate-[vt-in_0.26s_var(--ease-out)_0.06s_both] motion-reduce:animate-none"
+          : "invisible opacity-0 transition-[opacity,visibility] duration-150 ease-in motion-reduce:transition-none",
+      )}
+    >
       <BallotSlip voter={DEMO_YOU} optionLabels={[option.label]} justCast={shown} />
-      <VoterCrewStack crew={results.voterCrew ?? []} lastVoteAt={results.lastVoteAt} you={DEMO_YOU} youJustJoined={shown} />
+      <VoterCrewStack
+        crew={results.voterCrew ?? []}
+        lastVoteAt={results.lastVoteAt}
+        you={DEMO_YOU}
+        youJustJoined={shown}
+      />
       <div className={cn(shown && "animate-[check-in_0.25s_var(--ease-out)_0.9s_both] motion-reduce:animate-none")}>
         <LeaderCard
           option={leader}
@@ -119,8 +146,7 @@ function CastResult({ option, shown, onVoteAgain }: { option: PublicOption; show
           useSegmentedTally={presentation.useSegmentedTally}
         />
       </div>
-      {/* Focus lands here after casting, so keyboard users don't lose their place when the ballot hides. */}
-      <button type="button" autoFocus={shown} onClick={onVoteAgain} className={linkButtonClasses()}>
+      <button ref={voteAgainRef} type="button" onClick={onVoteAgain} className={linkButtonClasses()}>
         Vote again
       </button>
     </div>

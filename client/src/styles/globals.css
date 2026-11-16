@@ -8,6 +8,15 @@
     color-scheme: light;
   }
 
+  /* Entrances that overshoot the screen edge for a moment (the stamp slams in at 2.4x) must not
+     widen the page: on phones that zooms the layout out and aborts the vote's view transition.
+     Both elements, measured: either one alone still lets the overflow through. clip, not hidden,
+     so neither becomes a scroll container and sticky bars keep working. */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   body {
     margin: 0;
     background: var(--color-cream);

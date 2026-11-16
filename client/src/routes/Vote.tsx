@@ -16,6 +16,7 @@ import { randomTint } from "../lib/dicebear";
 import { getOrCreateVoterToken } from "../lib/voter-token";
 import { getVotedRecord, setVotedRecord, type VotedRecord } from "../lib/voted-record";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { withViewTransition } from "../lib/view-transition";
 
 interface Errors {
   name?: string;
@@ -98,14 +99,19 @@ export function Vote() {
         voterToken,
         optionIds: selectedIds,
       });
-      setResults(newResults);
       const record: VotedRecord = { optionIds: selectedIds, voterName: name.trim(), voterTint: tint };
       setVotedRecord(slug, record);
-      setVotedRecordState(record);
-      setJustVoted(true);
+      // Ballot -> "you voted" runs as a view transition: the sticker and title stay put, the ballot
+      // fades out and the slip rises in. Back to the top, so the stamp lands where the voter is looking.
+      withViewTransition(() => {
+        setResults(newResults);
+        setVotedRecordState(record);
+        setJustVoted(true);
+        setConfirmOpen(false);
+        window.scrollTo({ top: 0 });
+      });
       const labels = selectedIds.map((id) => poll.options.find((o) => o.id === id)?.label).join(" and ");
       announceStatus(`Vote cast for ${labels}`);
-      setConfirmOpen(false);
     } catch {
       // Keep the voter's name/avatar/selection intact and let them retry from the same modal
       // (guidance/brand-kit.md "Errors & destructive actions") — never lose a vote silently.

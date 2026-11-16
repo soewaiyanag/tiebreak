@@ -45,7 +45,7 @@ export function Landing() {
       </header>
 
       <main id="main">
-        <section className="mx-auto grid max-w-page items-center gap-12 px-4 pb-20 pt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:gap-16 lg:pt-16">
+        <section className="mx-auto grid max-w-page grid-cols-[minmax(0,1fr)] items-center gap-12 px-4 pb-20 pt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:gap-16 lg:pt-16">
           <div>
             <h1
               className={cn(

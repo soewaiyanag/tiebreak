@@ -51,6 +51,7 @@ export function Landing() {
               className={cn(
                 "text-balance font-display text-[clamp(2.75rem,7vw,4.75rem)] font-black leading-[0.98] tracking-[-0.03em] text-cocoa",
                 RISO_HEADING,
+                "animate-[riso-print_0.55s_var(--ease-out)_0.2s_both] motion-reduce:animate-none",
               )}
             >
               Stop the group chat going in circles.

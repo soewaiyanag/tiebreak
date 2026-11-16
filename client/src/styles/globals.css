@@ -84,6 +84,14 @@
     }
   }
 
+  /* The hero headline's butter plate printing off-register: the shadow starts tucked under the
+     letters and slides out to its offset. The letters never move, only the second ink does. */
+  @keyframes riso-print {
+    from {
+      text-shadow: 0 0 0 var(--color-butter);
+    }
+  }
+
   /* A label or check swapping in (an icon swap: scale 0.8 + blur, ~180ms ease-out). */
   @keyframes check-in {
     from {

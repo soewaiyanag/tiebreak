@@ -17,7 +17,7 @@ export function StatusSticker(props: StatusStickerProps) {
   return (
     <span
       className={cn(
-        "inline-flex -rotate-2 items-center gap-1.5 rounded-[length:var(--radius-md)] border-2 border-cocoa px-2.5 py-1 font-display text-sm font-bold tabular-nums text-cocoa",
+        "inline-flex -rotate-2 items-center gap-1.5 whitespace-nowrap rounded-[length:var(--radius-md)] border-2 border-cocoa px-2.5 py-1 font-display text-sm font-bold tabular-nums text-cocoa",
         open ? "bg-card" : "bg-cream-deep",
       )}
     >

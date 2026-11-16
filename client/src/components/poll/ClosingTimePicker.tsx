@@ -1,9 +1,21 @@
-import { forwardRef, useId, useState } from "react";
-import { InkChip } from "../ui/InkChip";
+import { forwardRef, useEffect, useId, useRef } from "react";
+import { DayPicker } from "react-day-picker";
 import { FieldError } from "../ui/FormField";
+import { InkChip } from "../ui/InkChip";
 import { StatusSticker } from "./StatusSticker";
 import { useNow } from "../../hooks/useNow";
-import { addDays, atTime, parseLocalValue, quickPicks, startOfDay, toLocalValue } from "../../lib/closing-time";
+import { cn } from "../../lib/cn";
+import {
+  atTime,
+  clampFuture,
+  parseLocalValue,
+  quickPicks,
+  startOfDay,
+  to12Hour,
+  to24Hour,
+  toLocalValue,
+  type Meridiem,
+} from "../../lib/closing-time";
 
 interface ClosingTimePickerProps {
   legend: string;
@@ -13,26 +25,134 @@ interface ClosingTimePickerProps {
   error?: string;
 }
 
-// shortcut: only the next 14 days and 6 AM–11 PM are pickable; polls here close in hours or days. Widen if groups need later dates or overnight closes.
-const DAYS_AHEAD = 14;
-const HOUR_ROWS = [
-  { label: "Morning", hours: [6, 7, 8, 9, 10, 11] },
-  { label: "Afternoon", hours: [12, 13, 14, 15, 16, 17] },
-  { label: "Evening", hours: [18, 19, 20, 21, 22, 23] },
-];
-const MINUTES = [0, 15, 30, 45];
+const MONTHS_AHEAD = 12;
+const DEFAULT_HOUR_24 = 12;
+const HOURS_12 = Array.from({ length: 12 }, (_, i) => i + 1);
+const MINUTES = Array.from({ length: 60 }, (_, i) => i);
+const MERIDIEMS: Meridiem[] = ["AM", "PM"];
 
-const weekday = new Intl.DateTimeFormat(undefined, { weekday: "short" });
-const monthName = new Intl.DateTimeFormat(undefined, { month: "short" });
-const fullDay = new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric" });
-const hourName = new Intl.DateTimeFormat(undefined, { hour: "numeric" });
+const pad = (n: number) => String(n).padStart(2, "0");
+
+const NAV_BUTTON =
+  "flex h-10 w-10 items-center justify-center rounded-full text-cocoa hover:bg-cream-deep focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal disabled:opacity-30 disabled:hover:bg-transparent";
+
+/** The calendar, dressed in the app's tokens: day buttons are round pieces, the picked day is inked in. */
+const CALENDAR_CLASSES = {
+  root: "w-full",
+  months: "relative",
+  month: "w-full",
+  month_caption: "flex h-10 items-center justify-center font-display text-md font-black text-cocoa",
+  nav: "absolute inset-x-0 top-0 flex items-center justify-between",
+  button_previous: NAV_BUTTON,
+  button_next: NAV_BUTTON,
+  chevron: "fill-cocoa",
+  month_grid: "mt-2 w-full border-separate border-spacing-y-0.5",
+  weekday: "pb-1 text-center font-body text-xs font-bold text-cocoa-soft",
+  day: "p-0 text-center",
+  day_button:
+    "mx-auto flex h-10 w-10 items-center justify-center rounded-full font-display text-sm font-bold tabular-nums text-cocoa enabled:hover:bg-cream-deep focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal disabled:cursor-not-allowed",
+  selected:
+    "[&>button]:bg-cocoa [&>button]:text-cream-bright [&>button]:hover:bg-cocoa [&>button]:animate-[check-in_0.18s_var(--ease-out)] motion-reduce:[&>button]:animate-none",
+  today: "[&>button]:ring-2 [&>button]:ring-inset [&>button]:ring-cocoa-soft",
+  disabled: "[&>button]:opacity-35",
+  outside: "invisible",
+};
+
+interface WheelItem {
+  value: number;
+  label: string;
+  disabled: boolean;
+}
+
+/**
+ * A scrollable column of choices with the picked one centred and inked in.
+ * Scroll to browse, tap to pick, or use the arrow keys. Not a native select:
+ * every row is styled, and a long list (60 minutes) stays one thumb-flick.
+ */
+function Wheel({
+  label,
+  items,
+  value,
+  onChange,
+}: {
+  label: string;
+  items: WheelItem[];
+  value: number | null;
+  onChange: (value: number) => void;
+}) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const firstRender = useRef(true);
+  const id = useId();
+
+  // Keeps the picked row centred. The first paint jumps there; later picks glide, unless motion is reduced.
+  useEffect(() => {
+    const list = listRef.current;
+    const row = list?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (!list || !row) return;
+    const smooth = !firstRender.current && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    firstRender.current = false;
+    list.scrollTo({
+      top: row.offsetTop - list.clientHeight / 2 + row.offsetHeight / 2,
+      behavior: smooth ? "smooth" : "auto",
+    });
+  }, [value]);
+
+  function step(direction: 1 | -1) {
+    const open = items.filter((item) => !item.disabled);
+    const at = open.findIndex((item) => item.value === value);
+    const next = open[at === -1 ? (direction === 1 ? 0 : open.length - 1) : at + direction];
+    if (next) onChange(next.value);
+  }
+
+  return (
+    <div className="flex-1">
+      <p className="mb-1 text-center font-body text-xs font-bold text-cocoa-soft">{label}</p>
+      <div
+        ref={listRef}
+        role="listbox"
+        tabIndex={0}
+        aria-label={label}
+        aria-activedescendant={value === null ? undefined : `${id}-${value}`}
+        onKeyDown={(e) => {
+          if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+          e.preventDefault();
+          step(e.key === "ArrowDown" ? 1 : -1);
+        }}
+        className="relative h-[220px] snap-y snap-proximity overflow-y-auto overscroll-contain rounded-[length:var(--radius-md)] border-2 border-cocoa-soft bg-card py-[88px] [mask-image:linear-gradient(transparent,black_22%,black_78%,transparent)] [scrollbar-width:none] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-teal [&::-webkit-scrollbar]:hidden"
+      >
+        {items.map((item) => {
+          const picked = item.value === value;
+          return (
+            <div
+              key={item.value}
+              id={`${id}-${item.value}`}
+              role="option"
+              aria-selected={picked}
+              aria-disabled={item.disabled || undefined}
+              onClick={() => !item.disabled && onChange(item.value)}
+              className={cn(
+                "mx-1.5 flex h-11 snap-center items-center justify-center rounded-full font-display text-base font-bold tabular-nums transition-colors duration-150",
+                picked ? "bg-cocoa text-cream-bright" : "text-cocoa",
+                !picked && !item.disabled && "cursor-pointer hover:bg-cream-deep",
+                item.disabled && "cursor-not-allowed opacity-35",
+              )}
+            >
+              {item.label}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /**
  * The closing-time field, in place of the browser's date-time input:
- * one-tap quick picks for the usual cases, then a day strip, an hour grid
- * and minute chips for anything else. The preview is the exact sticker
- * voters will see, so "is that long enough?" gets answered as you pick.
- * The ref lands on the first quick pick, for focusing on a validation error.
+ * one-tap quick picks for the usual cases, then a calendar for any day in
+ * the next year and scrolling wheels for any hour and minute. The preview
+ * is the exact sticker voters will see, so "is that long enough?" gets
+ * answered as you pick. The ref lands on the first quick pick, for focusing
+ * on a validation error.
  */
 export const ClosingTimePicker = forwardRef<HTMLButtonElement, ClosingTimePickerProps>(function ClosingTimePicker(
   { legend, value, onChange, error },
@@ -42,18 +162,28 @@ export const ClosingTimePicker = forwardRef<HTMLButtonElement, ClosingTimePicker
   const errorId = useId();
   const picked = parseLocalValue(value);
   const today = startOfDay(now);
-  // The day you're browsing before you've picked an hour; once a time is picked, the value decides.
-  const [browsingDay, setBrowsingDay] = useState(today);
-  const day = picked ? startOfDay(picked) : browsingDay;
-  const isPast = (d: Date) => d.getTime() <= now.getTime();
+  const lastMonth = new Date(today.getFullYear(), today.getMonth() + MONTHS_AHEAD, 1);
 
-  function pickDay(d: Date) {
-    if (picked) onChange(toLocalValue(atTime(d, picked.getHours(), picked.getMinutes())));
-    else setBrowsingDay(d);
-  }
+  // Every control builds on what's picked so far, or noon, so the first tap anywhere gives a complete time.
+  const base = picked ?? atTime(today, DEFAULT_HOUR_24, 0);
+  const day = startOfDay(base);
+  const { hour, meridiem } = to12Hour(base.getHours());
+  const isPast = (d: Date) => d.getTime() <= now.getTime();
+  const commit = (d: Date) => onChange(toLocalValue(clampFuture(d, now)));
+
+  const hourItems: WheelItem[] = HOURS_12.map((h) => ({
+    value: h,
+    label: String(h),
+    disabled: isPast(atTime(day, to24Hour(h, meridiem), 59)),
+  }));
+  const minuteItems: WheelItem[] = MINUTES.map((m) => ({
+    value: m,
+    label: pad(m),
+    disabled: isPast(atTime(day, base.getHours(), m)),
+  }));
 
   return (
-    // min-w-0: fieldsets default to min-width: min-content, which would stretch to fit the whole day strip.
+    // min-w-0: fieldsets default to min-width: min-content, which would stretch to fit the widest child.
     <fieldset aria-describedby={error ? errorId : undefined} className="min-w-0">
       <legend className="font-body text-sm font-bold text-cocoa">{legend}</legend>
 
@@ -72,88 +202,58 @@ export const ClosingTimePicker = forwardRef<HTMLButtonElement, ClosingTimePicker
         ))}
       </div>
 
-      <p className="mt-5 font-body text-sm font-bold text-cocoa">Or pick a day</p>
-      {/* Scrolls sideways on narrow screens; py/px leave room for the piece edge and focus ring. */}
-      <div className="-mx-1 mt-2 flex snap-x gap-2 overflow-x-auto px-1 pb-2 pt-1">
-        {Array.from({ length: DAYS_AHEAD }, (_, i) => addDays(today, i)).map((d, i) => {
-          const isPicked = d.getTime() === day.getTime();
-          return (
-            <InkChip
-              key={d.toISOString()}
-              picked={isPicked}
-              aria-label={i === 0 ? `Today, ${fullDay.format(d)}` : fullDay.format(d)}
-              onClick={() => pickDay(d)}
-              layout="flex flex-col items-center justify-center py-2"
-              className="w-16 shrink-0 snap-start rounded-[length:var(--radius-md)]"
-            >
-              <span className="font-body text-xs font-bold text-cocoa-soft">
-                {i === 0 ? "Today" : weekday.format(d)}
-              </span>
-              <span className="text-xl leading-none tabular-nums">{d.getDate()}</span>
-              <span className="font-body text-xs text-cocoa-soft">{monthName.format(d)}</span>
-            </InkChip>
-          );
-        })}
-      </div>
+      <p className="mt-5 font-body text-sm font-bold text-cocoa">Or pick a day and time</p>
+      {/* A container query, not a screen one: the same picker sits in the wide form and the narrow Reopen modal. */}
+      <div className="@container mt-2">
+        <div className="grid gap-4 @md:grid-cols-[minmax(0,1fr)_13rem]">
+          <div className="rounded-[length:var(--radius-md)] border-2 border-cocoa-soft bg-card p-3">
+            <DayPicker
+              // Remounting on a new month follows quick picks into that month; picks inside it keep focus.
+              key={picked ? `${picked.getFullYear()}-${picked.getMonth()}` : "none"}
+              mode="single"
+              required
+              selected={picked ? day : undefined}
+              onSelect={(d) => commit(atTime(d, base.getHours(), base.getMinutes()))}
+              defaultMonth={picked ?? today}
+              startMonth={today}
+              endMonth={lastMonth}
+              disabled={{ before: today }}
+              classNames={CALENDAR_CLASSES}
+            />
+          </div>
 
-      <div className="mt-4 space-y-2">
-        {HOUR_ROWS.map((row) => (
-          <div key={row.label} className="sm:flex sm:items-center sm:gap-3">
-            <span className="mb-1 block font-body text-sm text-cocoa-soft sm:mb-0 sm:w-20 sm:shrink-0">
-              {row.label}
-            </span>
-            <div className="grid flex-1 grid-cols-6 gap-1.5">
-              {row.hours.map((h) => {
-                const isPicked = picked?.getHours() === h;
-                // An hour is gone once even its last quarter has passed.
-                const gone = isPast(atTime(day, h, 45));
-                return (
-                  <InkChip
-                    key={h}
-                    picked={isPicked}
-                    aria-label={hourName.format(atTime(day, h, 0))}
-                    disabled={gone}
-                    onClick={() => {
-                      const minute = picked?.getMinutes() ?? 0;
-                      // Keep the minute if it's still ahead; otherwise jump to this hour's first quarter that is.
-                      const firstOpen = MINUTES.find((m) => !isPast(atTime(day, h, m))) ?? 0;
-                      onChange(toLocalValue(atTime(day, h, isPast(atTime(day, h, minute)) ? firstOpen : minute)));
-                    }}
-                    layout="flex items-center justify-center"
-                    className="h-11 rounded-full text-sm tabular-nums"
-                  >
-                    {h % 12 === 0 ? 12 : h % 12}
-                  </InkChip>
-                );
-              })}
+          <div className="flex gap-2">
+            <Wheel
+              label="Hour"
+              items={hourItems}
+              value={picked ? hour : null}
+              onChange={(h) => commit(atTime(day, to24Hour(h, meridiem), base.getMinutes()))}
+            />
+            <Wheel
+              label="Minute"
+              items={minuteItems}
+              value={picked ? base.getMinutes() : null}
+              onChange={(m) => commit(atTime(day, base.getHours(), m))}
+            />
+            <div className="flex flex-col justify-center gap-2 pt-5">
+              {MERIDIEMS.map((m) => (
+                <InkChip
+                  key={m}
+                  picked={Boolean(picked) && meridiem === m}
+                  disabled={isPast(atTime(day, m === "AM" ? 11 : 23, 59))}
+                  onClick={() => commit(atTime(day, to24Hour(hour, m), base.getMinutes()))}
+                  layout="flex items-center justify-center"
+                  className="h-11 w-12 rounded-full text-sm"
+                >
+                  {m}
+                </InkChip>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
-
-      <div className="mt-3 sm:flex sm:items-center sm:gap-3">
-        <span className="mb-1 block font-body text-sm text-cocoa-soft sm:mb-0 sm:w-20 sm:shrink-0">Minutes</span>
-        <div className="grid flex-1 grid-cols-4 gap-1.5 sm:flex-none sm:basis-[calc((100%-5.75rem)*4/6)]">
-          {MINUTES.map((m) => {
-            const isPicked = picked?.getMinutes() === m;
-            return (
-              <InkChip
-                key={m}
-                picked={isPicked}
-                aria-label={`${m} minutes past`}
-                disabled={!picked || isPast(atTime(day, picked.getHours(), m))}
-                onClick={() => picked && onChange(toLocalValue(atTime(day, picked.getHours(), m)))}
-                layout="flex items-center justify-center"
-                className="h-11 rounded-full text-sm tabular-nums"
-              >
-                :{String(m).padStart(2, "0")}
-              </InkChip>
-            );
-          })}
         </div>
       </div>
 
-      <div className="mt-5 flex min-h-9 items-center gap-3 font-body text-sm text-cocoa-soft">
+      <div className="mt-5 flex min-h-9 flex-wrap items-center gap-x-3 gap-y-2 font-body text-sm text-cocoa-soft">
         {picked ? (
           <>
             Voters will see

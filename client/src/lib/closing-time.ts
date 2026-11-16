@@ -54,3 +54,19 @@ export function quickPicks(now: Date): QuickPick[] {
   picks.push({ label: "Tomorrow, noon", value: toLocalValue(atTime(addDays(today, 1), 12, 0)) });
   return picks;
 }
+
+export type Meridiem = "AM" | "PM";
+
+export function to24Hour(hour12: number, meridiem: Meridiem): number {
+  return (hour12 % 12) + (meridiem === "PM" ? 12 : 0);
+}
+
+export function to12Hour(hour24: number): { hour: number; meridiem: Meridiem } {
+  return { hour: hour24 % 12 === 0 ? 12 : hour24 % 12, meridiem: hour24 >= 12 ? "PM" : "AM" };
+}
+
+/** A time that has already passed becomes the next quarter hour, so a poll can never be created closed. */
+export function clampFuture(d: Date, now: Date): Date {
+  const MS_PER_MINUTE = 60_000;
+  return d.getTime() > now.getTime() ? d : roundUpToQuarter(new Date(now.getTime() + MS_PER_MINUTE));
+}

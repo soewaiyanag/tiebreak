@@ -10,9 +10,9 @@ A group polling app — create a poll, share a link, the group votes, ties get s
 
 ![Tiebreak landing page: "Stop the group chat going in circles." beside a playable Pizza night ballot](docs/screenshots/landing.png)
 
-**The vote page, on a phone.** What everyone in the chat opens from the link: a name, a face, one pick, one button.
+**The vote page.** What everyone in the chat opens from the link: a name, a face, one pick, one button.
 
-<img src="docs/screenshots/vote.png" alt="Tiebreak vote page on a phone: name and avatar, four pizza options with Detroit-style picked, and a Cast my vote button" width="360">
+![Tiebreak vote page: name and avatar, four pizza options with Detroit-style picked, and a Cast my vote button](docs/screenshots/vote.png)
 
 ## Status
 

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import { Logo } from "../components/layout/Logo";
 import { SkipLink } from "../components/layout/SkipLink";
-import { LandingDemo } from "../components/landing/LandingDemo";
+import { LandingChat } from "../components/landing/LandingChat";
 import {
   DEMO_CREW,
   DEMO_OPTIONS,
@@ -45,7 +45,7 @@ export function Landing() {
       </header>
 
       <main id="main">
-        <section className="mx-auto grid max-w-page grid-cols-[minmax(0,1fr)] items-center gap-12 px-4 pb-20 pt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:gap-16 lg:pt-16">
+        <section className="mx-auto grid max-w-page grid-cols-[minmax(0,1fr)] items-center gap-12 px-4 pb-20 pt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)] lg:gap-16 lg:pb-10 lg:pt-4">
           <div>
             <h1
               className={cn(
@@ -78,7 +78,7 @@ export function Landing() {
               )}
             </div>
           </div>
-          <LandingDemo />
+          <LandingChat />
         </section>
 
         <section

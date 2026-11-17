@@ -152,6 +152,31 @@
       transform: scale(1) rotate(-8deg);
     }
   }
+  /* Stickers shared into the landing chat sit at a tilt and, as the page scrolls, tilt a little
+     further and drift up: scroll-driven, so no JS runs on scroll. Unsupported browsers and
+     reduced motion keep the resting tilt. */
+  .scroll-tilt {
+    rotate: var(--tilt);
+  }
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .scroll-tilt {
+        animation: scroll-tilt linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 70vh;
+      }
+    }
+  }
+  @keyframes scroll-tilt {
+    from {
+      rotate: var(--tilt);
+    }
+    to {
+      rotate: var(--tilt-to);
+      translate: 0 -18px;
+    }
+  }
+
   /* A pack bar filling out from the left to its share (the landing page's results moment). */
   @keyframes pack-fill {
     from {

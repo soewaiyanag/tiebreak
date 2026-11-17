@@ -6,9 +6,9 @@ A group polling app — create a poll, share a link, the group votes, ties get s
 
 ## Screenshots
 
-**Landing page.** The vote page on the right is playable: pick, cast, watch the stamp land.
+**Landing page.** The whole product in one group chat: friends going in circles, a Tiebreak link, eleven votes, a settled answer.
 
-![Tiebreak landing page: "Stop the group chat going in circles." beside a playable Pizza night ballot](docs/screenshots/landing.png)
+![Tiebreak landing page: "Stop the group chat going in circles." beside a group chat where a shared poll ends in a stamped winner](docs/screenshots/landing.png)
 
 **The vote page.** What everyone in the chat opens from the link: a name, a face, one pick, one button.
 
